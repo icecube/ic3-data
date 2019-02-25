@@ -35,10 +35,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                           "'OutputKey'+_global_time_offset, "
                           "and optionally 'OutputKey'+_settings, ",
                           None)
-        self.AddParameter("WriteConfigToFrame",
-                          "If True, the dnn data container settings will be "
-                          "written to the frame if 'OutputKey' is given.",
-                          True)
 
     def Configure(self):
         """Configure DNN data handler
@@ -52,7 +48,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._pulse_key = self.GetParameter("PulseKey")
         self._cascade_key = self.GetParameter("CascadeKey")
         self._output_key = self.GetParameter("OutputKey")
-        self._write_config = self.GetParameter("WriteConfigToFrame")
 
         self._config = dict(self._container.config)
 
@@ -184,10 +179,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                 self._container.bin_values
             frame[self._output_key + '_global_time_offset'] = \
                 dataclasses.I3Double(global_time_offset)
-
-            if False: #self._write_config:
-                frame[self._output_key + '_config'] = \
-                    dataclasses.I3String(str(self._container.config))            
 
         self.PushFrame(frame)
 

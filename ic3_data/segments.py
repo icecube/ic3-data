@@ -19,7 +19,6 @@ def CreateDNNData(tray, name,
                   AutoencoderEncoderName=None,
                   CascadeKey='MCCascade',
                   OutputKey='dnn_data',
-                  WriteConfigToFrame=True
                   ):
 
     # create DNN data container object
@@ -42,5 +41,4 @@ def CreateDNNData(tray, name,
                    PulseKey=PulseKey,
                    CascadeKey=CascadeKey,
                    OutputKey=OutputKey,
-                   WriteConfigToFrame=WriteConfigToFrame,
                    If=lambda f: PulseKey in f)
