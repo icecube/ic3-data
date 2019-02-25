@@ -74,7 +74,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         if self._config['data_format'] == 'autoencoder':
             self._config['autoencoder'] = autoencoder.get_autoencoder(
-                                                    self._autoencoder_settings)
+                                                    self._config['autoencoder_settings'])
 
         class_string = 'ic3_data.data_formats.{}'.format(
                                 self._config['data_format'])
@@ -106,7 +106,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._container.initalize()
 
         # get pulses
-        pulses = frame[pulse_key]
+        pulses = frame[self._pulse_key]
 
         if isinstance(pulses, dataclasses.I3RecoPulseSeriesMapMask) or \
            isinstance(pulses, dataclasses.I3RecoPulseSeriesMapUnion):
@@ -120,7 +120,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         #     DNN_preprocess_boost.restructure_pulsemap(pulses)
 
         # get global time offset
-        global_time_offset = self.get_global_time_offset(charges=charges,
+        global_time_offset = self.get_global_time_offset(frame=frame,
+                                                         charges=charges,
                                                          times=times)
 
         # loop through hit DOMs
@@ -129,7 +130,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             dom_charges = dom_charges_dict[om_key]
 
             # abort early if no pulses exist for DOM key
-            if not dom_charges:
+            if dom_charges.size == 0:
                 continue
 
             # calculate times relative to global time offset
@@ -137,8 +138,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
             # get local time offset for the DOM
             local_time_offset = self.get_local_time_offset(
+                                                    frame=frame,
                                                     om_key=om_key,
-                                                    dom_times=dom_times,
+                                                    dom_times=rel_dom_times,
                                                     dom_charges=dom_charges)
 
             # Calculate times relative to local offset
@@ -183,8 +185,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             frame[self._output_key + '_global_time_offset'] = \
                 dataclasses.I3Double(global_time_offset)
 
-            if self._write_config:
-                frame[self._output_key + '_config'] = self._container.config
+            if False: #self._write_config:
+                frame[self._output_key + '_config'] = \
+                    dataclasses.I3String(str(self._container.config))            
 
         self.PushFrame(frame)
 
@@ -228,7 +231,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         return charges, times, dom_times_dict, dom_charges_dict
 
-    def get_global_time_offset(self, charges, times):
+    def get_global_time_offset(self, frame, charges, times):
         """Get global time offset for event.
 
         Parameters
@@ -248,29 +251,29 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         float
             The global time offset for the event.
         """
-        if self._config['_relative_time_method'].lower() == 'cascade_vertex':
+        if self._config['relative_time_method'].lower() == 'cascade_vertex':
             global_time_offset = frame[self._cascade_key].time
 
-        elif self._config['_relative_time_method'].lower() == 'time_range':
+        elif self._config['relative_time_method'].lower() == 'time_range':
 
             global_time_offset = get_time_range(charges, times,
                                                 time_window_size=6000)[0]
 
-        elif self._config['_relative_time_method'] is None:
+        elif self._config['relative_time_method'] is None:
             global_time_offset = 0.
 
-        elif self._config['_relative_time_method'] == 'first_light_at_dom':
+        elif self._config['relative_time_method'] == 'first_light_at_dom':
             global_time_offset = frame[self._cascade_key].time
 
-        elif self._config['_relative_time_method'] == 'wf_quantile':
+        elif self._config['relative_time_method'] == 'wf_quantile':
             global_time_offset = 0.
 
         else:
             raise ValueError('Option is uknown: {!r}'.format(
-                                        self._config['_relative_time_method']))
+                                        self._config['relative_time_method']))
         return global_time_offset
 
-    def get_local_time_offset(self, om_key, dom_times, dom_charges):
+    def get_local_time_offset(self, frame, om_key, dom_times, dom_charges):
         """Calculate local time offset for pulses of a specific DOM.
 
         The local time offset is the offset relative to the global time offset.
@@ -289,7 +292,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         dom_charges : numpy.ndarray
             The charges of the pulses measured at the DOM.
         """
-        if self._config['_relative_time_method'] == 'first_light_at_dom':
+        if self._config['relative_time_method'] == 'first_light_at_dom':
             # Global time offset is at vertex time. The times given here
             # are already correctecd for global time offset and therefore
             # the vertex time is at 0.
@@ -299,8 +302,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                                     vertex_time=0.,
                                     )
 
-        elif self._config['_relative_time_method'] == 'wf_quantile':
+        elif self._config['relative_time_method'] == 'wf_quantile':
             local_time_offset = get_wf_quantile(
                                     times=dom_times,
                                     charges=dom_charges)
+        else:
+            local_time_offset = 0.
         return local_time_offset

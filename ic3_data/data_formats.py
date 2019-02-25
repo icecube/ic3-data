@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 import numpy as np
 
-from ic3_data.utils.autoencoder import autoencoder
+from ic3_data.utils.autoencoder import autoencoder as aencoder
 from ic3_data.misc import weighted_quantile, weighted_std
 
 """All data format functions must have the following signature:
@@ -167,7 +167,7 @@ def autoencoder(dom_charges, rel_dom_times, global_time_offset,
     """
     total_time_offset = local_time_offset + global_time_offset
 
-    bin_values_list, bin_indices_list = autoencoder.get_encoded_data(
+    bin_values_list, bin_indices_list = aencoder.get_encoded_data(
                         config['autoencoder'],
                         config['autoencoder_name'],
                         dom_times=rel_dom_times,
