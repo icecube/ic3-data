@@ -292,6 +292,9 @@ def pulse_summmary_clipped(dom_charges, rel_dom_times, global_time_offset,
     dom_charges = dom_charges[clip_mask]
     # --------------------------------------
 
+    if len(dom_charges) == 0:
+        return None, None
+
     dom_charge_sum = sum(dom_charges)
     rel_dom_times_first = rel_dom_times[0]
     rel_dom_times_last = rel_dom_times[-1]

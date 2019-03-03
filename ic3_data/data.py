@@ -151,6 +151,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                                         config=self._config,
                                         )
 
+            # abort if no data is to be saved for this DOM
+            if bin_values_list is None:
+                continue
+
             # Fill DNNDataContainer
             self._container.bin_values[om_key] = bin_values_list
             self._container.bin_indices[om_key] = bin_indices_list
