@@ -117,8 +117,10 @@ class DNNDataContainer(object):
         """Initialize empty data fields.
         """
         batch_size = 1
-        self.x_ic78 = np.zeros([batch_size, 10, 10, 60, self.config['num_bins']])
-        self.x_deepcore = np.zeros([batch_size, 8, 60, self.config['num_bins']])
+        self.x_ic78 = np.zeros([batch_size, 10, 10, 60,
+                                self.config['num_bins']])
+        self.x_deepcore = np.zeros([batch_size, 8, 60,
+                                    self.config['num_bins']])
 
         self.bin_indices = dataclasses.I3MapKeyVectorInt()
         self.bin_values = dataclasses.I3MapKeyVectorDouble()
