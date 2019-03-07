@@ -98,8 +98,6 @@ class DNNDataContainer(object):
         self.config['autoencoder_settings'] = cfg_data['autoencoder_settings']
         self.config['autoencoder_name'] = cfg_data['autoencoder_name']
 
-        raise NotImplementedError()
-
         self._is_configured = True
 
     def set_up(self):
