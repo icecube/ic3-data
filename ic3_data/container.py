@@ -1,6 +1,8 @@
 from __future__ import print_function, division
 
+import os
 import numpy as np
+import ruamel.yaml as yaml
 from icecube import dataclasses
 
 
@@ -83,6 +85,18 @@ class DNNDataContainer(object):
         """
         if self._is_configured:
             raise ValueError('Data container is already configured!')
+
+        config_file = os.path.join(model_path, 'config_data_settings.yaml')
+        with open(config_file, 'r') as stream:
+            cfg_data = yaml.safe_load(stream)
+
+        self.config['num_bins'] = cfg_data['num_bins']
+        self.config['relative_time_method'] = cfg_data['relative_time_method']
+        self.config['data_format'] = cfg_data['data_format']
+        self.config['time_bins'] = cfg_data['time_bins']
+        self.config['time_quantiles'] = cfg_data['time_quantiles']
+        self.config['autoencoder_settings'] = cfg_data['autoencoder_settings']
+        self.config['autoencoder_name'] = cfg_data['autoencoder_name']
 
         raise NotImplementedError()
 

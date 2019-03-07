@@ -69,7 +69,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         if self._config['data_format'] == 'autoencoder':
             self._config['autoencoder'] = autoencoder.get_autoencoder(
-                                                    self._config['autoencoder_settings'])
+                                        self._config['autoencoder_settings'])
 
         class_string = 'ic3_data.data_formats.{}'.format(
                                 self._config['data_format'])
