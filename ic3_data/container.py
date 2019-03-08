@@ -124,6 +124,7 @@ class DNNDataContainer(object):
 
         self.bin_indices = dataclasses.I3MapKeyVectorInt()
         self.bin_values = dataclasses.I3MapKeyVectorDouble()
+        self.global_time_offset = dataclasses.I3Double()
 
     def is_ready(self):
         """Check if data container is ready.
