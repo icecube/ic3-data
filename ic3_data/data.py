@@ -177,6 +177,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                                            index] = value
 
         # Write data to frame
+        print(self._container.global_time_offset,
+              type(self._container.global_time_offset))
         if self._output_key is not None:
             frame[self._output_key + '_bin_indices'] = \
                 self._container.bin_indices
