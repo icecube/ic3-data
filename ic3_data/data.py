@@ -118,7 +118,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         global_time_offset = self.get_global_time_offset(frame=frame,
                                                          charges=charges,
                                                          times=times)
-        self._container.global_time_offset = float(global_time_offset)
+        self._container.global_time_offset.value = global_time_offset
 
         # loop through hit DOMs
         for om_key, dom_pulses in pulses:
