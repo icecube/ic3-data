@@ -118,7 +118,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         global_time_offset = self.get_global_time_offset(frame=frame,
                                                          charges=charges,
                                                          times=times)
-        self._container.global_time_offset = global_time_offset
+        self._container.global_time_offset = float(global_time_offset)
 
         # loop through hit DOMs
         for om_key, dom_pulses in pulses:
@@ -177,8 +177,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                                            index] = value
 
         # Write data to frame
-        print(self._container.global_time_offset,
-              type(self._container.global_time_offset))
         if self._output_key is not None:
             frame[self._output_key + '_bin_indices'] = \
                 self._container.bin_indices
