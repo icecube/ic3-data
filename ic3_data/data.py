@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+import timeit
 import numpy as np
 
 from icecube import dataclasses, icetray
@@ -96,6 +97,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         frame : I3Frame
             Current i3 frame.
         """
+        # start timer
+        start_time = timeit.default_timer()
 
         # initalize data fields of data container
         self._container.initalize()
@@ -176,6 +179,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                     self._container.x_ic78[0, a + 4, b + 5, dom - 1,
                                            index] = value
 
+        # measure time
+        self._container.runtime.value = timeit.default_timer() - start_time
+
         # Write data to frame
         if self._output_key is not None:
             frame[self._output_key + '_bin_indices'] = \
@@ -184,6 +190,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                 self._container.bin_values
             frame[self._output_key + '_global_time_offset'] = \
                 self._container.global_time_offset
+            frame[self._output_key + '_runtime'] = \
+                self._container.runtime
 
         self.PushFrame(frame)
 
