@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-import wf_autoencoder
+from ic3_data.utils.autoencoder import wf_autoencoder
 
 
 def get_autoencoder(
