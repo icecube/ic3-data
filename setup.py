@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-exec(compile(open('version.py', "rb").read(),
-             'version.py',
+from setuptools import setup
+
+# get version number
+exec(compile(open('ic3_data/__init__.py', "rb").read(),
+             'ic3_data/__init__.py',
              'exec'))
+
 
 setup(name='ic3_data',
       version=__version__,
