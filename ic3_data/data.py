@@ -7,6 +7,7 @@ from icecube import dataclasses, icetray
 from ic3_data import misc
 from ic3_data import data_formats
 from ic3_data.ext_pybind11 import get_time_range
+from ic3_data.utils.time import get_time_range as get_time_range_py
 from ic3_data.utils.time import get_wf_quantile
 from ic3_data.utils.time import get_time_of_first_light
 from ic3_data.utils import detector
@@ -264,6 +265,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             global_time_offset = get_time_range(charges[sorted_indices],
                                                 times[sorted_indices],
                                                 time_window_size=6000)[0]
+            test = get_time_range_py(charges, times, time_window_size=6000)[0]
+            assert test == global_time_offset
 
         elif self._config['relative_time_method'] is None:
             global_time_offset = 0.
