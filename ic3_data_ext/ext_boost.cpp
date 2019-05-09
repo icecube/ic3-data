@@ -5,7 +5,7 @@
 #include "dataclasses/physics/I3RecoPulse.h"
 #include "dataclasses/I3Map.h"
 #include <boost/python.hpp>
-#include <numpy/ndarrayobject.h>
+#include "numpy/ndarrayobject.h"
 
 
 /******************************************************
