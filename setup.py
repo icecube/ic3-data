@@ -25,7 +25,23 @@ class get_pybind_include(object):
         return pybind11.get_include(self.user)
 
 
+class get_numpy_include(object):
+    """Helper class to determine the pybind11 include path
+    The purpose of this class is to postpone importing pybind11
+    until it is actually installed, so that the ``get_include()``
+    method can be invoked. """
+
+    def __init__(self, user=False):
+        self.user = user
+
+    def __str__(self):
+        import numpy
+        return numpy.get_include(self.user)
+
+
 def get_icecube_includes():
+    """Helper function to get include paths for IceCube headers.
+    """
     import os
     import glob
 
@@ -37,21 +53,31 @@ def get_icecube_includes():
     return include_dirs
 
 
+def get_boost_include_list():
+    """Helper function to get combine paths needed for the boost python
+    extension.
+    """
+    include_dirs = get_icecube_includes()
+    include_dirs.append(get_pybind_include())
+    include_dirs.append(get_pybind_include(user=True))
+    return include_dirs
+
+
 ext_modules = [
-    # Extension(
-    #     'ic3_data.ext_pybind11',
-    #     ['ic3_data_ext/ext_pybind11.cpp'],
-    #     include_dirs=[
-    #         # Path to pybind11 headers
-    #         get_pybind_include(),
-    #         get_pybind_include(user=True)
-    #     ],
-    #     language='c++'
-    # ),
+    Extension(
+        'ic3_data.ext_pybind11',
+        ['ic3_data_ext/ext_pybind11.cpp'],
+        include_dirs=[
+            # Path to pybind11 headers
+            get_pybind_include(),
+            get_pybind_include(user=True)
+        ],
+        language='c++'
+    ),
     Extension(
         'ic3_data.ext_boost',
         ['ic3_data_ext/ext_boost.cpp'],
-        include_dirs=get_icecube_includes(),
+        include_dirs=get_boost_include_list(),
         language='c++'
     ),
 ]
