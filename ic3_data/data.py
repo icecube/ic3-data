@@ -7,7 +7,7 @@ from icecube import dataclasses, icetray
 from ic3_data import misc
 from ic3_data import data_formats
 from ic3_data.ext_pybind11 import get_time_range
-from ic3_data.utils.time import get_time_range as get_time_range_py
+from ic3_data import ext_boost
 from ic3_data.utils.time import get_wf_quantile
 from ic3_data.utils.time import get_time_of_first_light
 from ic3_data.utils import detector
@@ -113,11 +113,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             pulses = pulses.apply(frame)
 
         # restructure pulses
-        # ToDo: Export this to c++
-        charges, times, dom_times_dict, dom_charges_dict = \
-            self.restructure_pulses(pulses)
         # charges, times, dom_times_dict, dom_charges_dict = \
-        #     DNN_preprocess_boost.restructure_pulsemap(pulses)
+        #     self.restructure_pulses(pulses)
+        charges, times, dom_times_dict, dom_charges_dict = \
+            ext_boost.restructure_pulsemap(pulses)
 
         # get global time offset
         global_time_offset = self.get_global_time_offset(frame=frame,

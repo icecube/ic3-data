@@ -25,6 +25,18 @@ class get_pybind_include(object):
         return pybind11.get_include(self.user)
 
 
+def get_icecube_includes():
+    import os
+    import glob
+
+    # find all icecube packages in the source directory
+    include_pattern = os.path.join(os.environ['I3_SRC'], '*/public')
+    include_dirs = glob.glob(include_pattern)
+    include_dirs.append(os.path.join(os.environ['I3_SRC'],
+                                     'cmake/tool-patches/common/'))
+    return include_dirs
+
+
 ext_modules = [
     Extension(
         'ic3_data.ext_pybind11',
@@ -34,6 +46,12 @@ ext_modules = [
             get_pybind_include(),
             get_pybind_include(user=True)
         ],
+        language='c++'
+    ),
+    Extension(
+        'ic3_data.ext_boost',
+        ['ic3_data_ext/ext_boost.cpp'],
+        include_dirs=get_icecube_includes(),
         language='c++'
     ),
 ]
