@@ -6,7 +6,8 @@ from icecube import dataclasses, icetray
 
 from ic3_data import misc
 from ic3_data import data_formats
-from ic3_data.utils.time import get_time_range, get_wf_quantile
+from ic3_data.ext_pybind11 import get_time_range
+from ic3_data.utils.time import get_wf_quantile
 from ic3_data.utils.time import get_time_of_first_light
 from ic3_data.utils import detector
 from ic3_data.utils.autoencoder import autoencoder

@@ -3,6 +3,7 @@ import numpy as np
 
 from ic3_data.utils.autoencoder import autoencoder as aencoder
 from ic3_data.misc import weighted_quantile, weighted_std
+from ic3_data.ext_pybind11 import get_summary_data
 
 """All data format functions must have the following signature:
 
@@ -295,32 +296,41 @@ def pulse_summmary_clipped(dom_charges, rel_dom_times, global_time_offset,
     if len(dom_charges) == 0:
         return None, None
 
-    dom_charge_sum = sum(dom_charges)
-    rel_dom_times_first = rel_dom_times[0]
-    rel_dom_times_last = rel_dom_times[-1]
+    # # ---------------------
+    # # python implementation
+    # # ---------------------
+    # dom_charge_sum = sum(dom_charges)
+    # rel_dom_times_first = rel_dom_times[0]
+    # rel_dom_times_last = rel_dom_times[-1]
 
-    charge_weighted_mean_time = np.average(rel_dom_times, weights=dom_charges)
-    charge_weighted_std_time = weighted_std(rel_dom_times, weights=dom_charges)
-    charge_weighted_quantile20_time = weighted_quantile(
-                            rel_dom_times, weights=dom_charges, quantile=0.2)
-    charge_weighted_quantile50_time = weighted_quantile(
-                            rel_dom_times, weights=dom_charges, quantile=0.5)
+    # charge_weighted_mean_time = np.average(rel_dom_times, weights=dom_charges)
+    # charge_weighted_std_time = weighted_std(rel_dom_times, weights=dom_charges)
+    # charge_weighted_quantile20_time = weighted_quantile(
+    #                         rel_dom_times, weights=dom_charges, quantile=0.2)
+    # charge_weighted_quantile50_time = weighted_quantile(
+    #                         rel_dom_times, weights=dom_charges, quantile=0.5)
 
-    mask_100ns_interval = rel_dom_times - rel_dom_times_first < 100
-    mask_500ns_interval = rel_dom_times - rel_dom_times_first < 500
+    # mask_100ns_interval = rel_dom_times - rel_dom_times_first < 100
+    # mask_500ns_interval = rel_dom_times - rel_dom_times_first < 500
 
-    dom_charge_sum_100ns = np.sum(dom_charges[mask_100ns_interval])
-    dom_charge_sum_500ns = np.sum(dom_charges[mask_500ns_interval])
+    # dom_charge_sum_100ns = np.sum(dom_charges[mask_100ns_interval])
+    # dom_charge_sum_500ns = np.sum(dom_charges[mask_500ns_interval])
 
-    bin_values_list = [dom_charge_sum,
-                       dom_charge_sum_500ns,
-                       dom_charge_sum_100ns,
-                       rel_dom_times_first,
-                       charge_weighted_quantile20_time,
-                       charge_weighted_quantile50_time,
-                       rel_dom_times_last,
-                       charge_weighted_mean_time,
-                       charge_weighted_std_time,
-                       ]
+    # bin_values_list = [dom_charge_sum,
+    #                    dom_charge_sum_500ns,
+    #                    dom_charge_sum_100ns,
+    #                    rel_dom_times_first,
+    #                    charge_weighted_quantile20_time,
+    #                    charge_weighted_quantile50_time,
+    #                    rel_dom_times_last,
+    #                    charge_weighted_mean_time,
+    #                    charge_weighted_std_time,
+    #                    ]
+
+    # ---------------------------------------------
+    # cpp implementation (about 5-10 times speedup)
+    # ---------------------------------------------
+    bin_values_list = get_summary_data(dom_charges, rel_dom_times)
+
     bin_indices_list = range(len(bin_values_list))
     return bin_values_list, bin_indices_list
