@@ -122,6 +122,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # so that this conversion can be omitted
         charges = np.array(charges)
         times = np.array(times)
+        for k in dom_times_dict.keys():
+            dom_times_dict[k] = np.array(dom_times_dict[k])
+            dom_charges_dict[k] = np.array(dom_charges_dict[k])
 
         # get global time offset
         global_time_offset = self.get_global_time_offset(frame=frame,
