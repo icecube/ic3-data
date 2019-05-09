@@ -321,15 +321,17 @@ PYBIND11_PLUGIN(ext_pybind11) {
 
 
     // Define the actual template types
-    m.def("get_time_range", &get_time_range<float>, get_time_range_docstr,
-                              py::arg("charges"), py::arg("times"),
-                              py::arg("time_window_size") = 6000.0);
+    m.def("get_time_range", &get_time_range<double>,
+          get_time_range_docstr,
+          py::arg("charges"), py::arg("times"),
+          py::arg("time_window_size") = 6000.0);
 
 
-    m.def("get_summary_data", &get_summary_data<double>, get_summary_data_docstr,
-                              py::arg("dom_charges"),
-                              py::arg("rel_dom_times"),
-                              py::arg("perform_log") = false);
+    m.def("get_summary_data", &get_summary_data<double>,
+          get_summary_data_docstr,
+          py::arg("dom_charges"),
+          py::arg("rel_dom_times"),
+          py::arg("perform_log") = false);
 
 
 #ifdef VERSION_INFO
