@@ -38,16 +38,16 @@ def get_icecube_includes():
 
 
 ext_modules = [
-    Extension(
-        'ic3_data.ext_pybind11',
-        ['ic3_data_ext/ext_pybind11.cpp'],
-        include_dirs=[
-            # Path to pybind11 headers
-            get_pybind_include(),
-            get_pybind_include(user=True)
-        ],
-        language='c++'
-    ),
+    # Extension(
+    #     'ic3_data.ext_pybind11',
+    #     ['ic3_data_ext/ext_pybind11.cpp'],
+    #     include_dirs=[
+    #         # Path to pybind11 headers
+    #         get_pybind_include(),
+    #         get_pybind_include(user=True)
+    #     ],
+    #     language='c++'
+    # ),
     Extension(
         'ic3_data.ext_boost',
         ['ic3_data_ext/ext_boost.cpp'],

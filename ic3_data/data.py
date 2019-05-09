@@ -116,7 +116,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # charges, times, dom_times_dict, dom_charges_dict = \
         #     self.restructure_pulses(pulses)
         charges, times, dom_times_dict, dom_charges_dict = \
-            ext_boost.restructure_pulsemap(pulses)
+            ext_boost.restructure_pulses(pulses)
 
         # get global time offset
         global_time_offset = self.get_global_time_offset(frame=frame,

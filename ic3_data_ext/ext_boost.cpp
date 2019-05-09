@@ -16,7 +16,7 @@ wrapped with boost python.
 // Actual C++ snippets. See docstrings at the bottom for argument info.
 
 template <typename T>
-inline boost::python::tuple restructure_pulse_map(
+inline boost::python::tuple restructure_pulses(
                                       const boost::python::object& pulse_map_obj
                                     ) {
 
@@ -48,6 +48,6 @@ inline boost::python::tuple restructure_pulse_map(
 
 BOOST_PYTHON_MODULE(ext_boost)
 {
-    boost::python::def("restructure_pulse_map",
-                       &restructure_pulse_map<double>);
+    boost::python::def("restructure_pulses",
+                       &restructure_pulses<double>);
 }
