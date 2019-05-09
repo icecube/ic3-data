@@ -260,8 +260,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             global_time_offset = frame[self._cascade_key].time
 
         elif self._config['relative_time_method'].lower() == 'time_range':
-
-            global_time_offset = get_time_range(charges, times,
+            sorted_indices = np.argsort(times)
+            global_time_offset = get_time_range(charges[sorted_indices],
+                                                times[sorted_indices],
                                                 time_window_size=6000)[0]
 
         elif self._config['relative_time_method'] is None:
