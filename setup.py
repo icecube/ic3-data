@@ -58,8 +58,8 @@ def get_boost_include_list():
     extension.
     """
     include_dirs = get_icecube_includes()
-    include_dirs.append(get_pybind_include())
-    include_dirs.append(get_pybind_include(user=True))
+    include_dirs.append(get_numpy_include())
+    include_dirs.append(get_numpy_include(user=True))
     return include_dirs
 
 
