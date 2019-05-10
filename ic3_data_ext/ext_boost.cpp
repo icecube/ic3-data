@@ -113,6 +113,7 @@ inline boost::python::tuple restructure_pulses(
 BOOST_PYTHON_MODULE(ext_boost)
 {
     // numpy requires this
+    numeric::array::set_module_and_type("numpy", "ndarray");
     import_array();
 
     boost::python::def("restructure_pulses",
