@@ -77,10 +77,6 @@ inline py::list get_summary_data( const py::array_t<T> dom_charges,
     T charge_weighted_mean_time = 0.0;
     T charge_weighted_std_time = 0.0;
 
-    const T time_zero = times(0);
-    T charge_i;
-    T times_i;
-
     //----------------------
     // calculate values
     //----------------------
@@ -89,16 +85,16 @@ inline py::list get_summary_data( const py::array_t<T> dom_charges,
     // loop through pulses
     for(int i=0; i < num_pulses; i++){
 
-        charge_i = charges(i);
-        times_i = times(i);
+        const T charge_i = charges(i);
+        const T times_i = times(i);
 
         // overall charge
         dom_charge_sum += charge_i;
 
         // charge in first 100/500 ns
-        if( times_i - time_zero < 500.){
+        if( times_i - times(0) < 500.){
             dom_charge_sum_500ns += charge_i;
-            if( times_i - time_zero < 100.){
+            if( times_i - times(0) < 100.){
                 dom_charge_sum_100ns += charge_i;
             }
         }
@@ -157,7 +153,7 @@ inline py::list get_summary_data( const py::array_t<T> dom_charges,
         summary_data.append( dom_charge_sum_500ns);
         summary_data.append( dom_charge_sum_100ns);
     }
-    summary_data.append( time_zero); // first pulse time
+    summary_data.append( times(0)); // first pulse time
     summary_data.append( charge_weighted_quantile20_time);
     summary_data.append( charge_weighted_quantile50_time);
     summary_data.append( times(num_pulses -1)); // last pulse time
