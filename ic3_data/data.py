@@ -118,16 +118,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         charges, times, dom_times_dict, dom_charges_dict = \
             ext_boost.restructure_pulses(pulses)
 
-        # TODO: return charges, times from boost bindings as ndarrays
-        # so that this conversion can be omitted
-        print(type(charges))
-        print(type(times))
-        # charges = np.array(charges)
-        # times = np.array(times)
-        for k in dom_times_dict.keys():
-            dom_times_dict[k] = np.array(dom_times_dict[k])
-            dom_charges_dict[k] = np.array(dom_charges_dict[k])
-
         # get global time offset
         global_time_offset = self.get_global_time_offset(frame=frame,
                                                          charges=charges,
