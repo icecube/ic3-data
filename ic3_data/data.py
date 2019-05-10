@@ -121,8 +121,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # TODO: return charges, times from boost bindings as ndarrays
         # so that this conversion can be omitted
         print(type(charges))
-        charges = np.array(charges)
-        times = np.array(times)
+        print(type(times))
+        # charges = np.array(charges)
+        # times = np.array(times)
         for k in dom_times_dict.keys():
             dom_times_dict[k] = np.array(dom_times_dict[k])
             dom_charges_dict[k] = np.array(dom_charges_dict[k])

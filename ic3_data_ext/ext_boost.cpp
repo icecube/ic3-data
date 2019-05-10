@@ -81,32 +81,39 @@ inline boost::python::tuple restructure_pulses(
     // Get pulse map
     I3RecoPulseSeriesMap& pulse_map = boost::python::extract<I3RecoPulseSeriesMap&>(pulse_map_obj);
 
-    boost::python::list charges;
-    boost::python::list times;
     boost::python::dict dom_times_dict;
     boost::python::dict dom_charges_dict;
 
-    std::vector<double> charges_vec;
+    std::vector<double> charges;
+    std::vector<double> times;
 
     for (auto const& dom_pulses : pulse_map){
-        boost::python::list dom_charges;
-        boost::python::list dom_times;
-        boost::python::object dom_times2;
-        //dom_times2 = stdVecToNumpyArray(dom_pulses.second)
+        std::vector<double> dom_charges;
+        std::vector<double> dom_times;
+
         for (unsigned int i=0; i < dom_pulses.second.size(); i++ ){
-            charges_vec.push_back(dom_pulses.second.at(i).GetCharge());
-            dom_charges.append(dom_pulses.second.at(i).GetCharge());
-            dom_times.append(dom_pulses.second.at(i).GetTime());
+            dom_charges.push_back(dom_pulses.second.at(i).GetCharge());
+            dom_times.push_back(dom_pulses.second.at(i).GetTime());
         }
-        dom_times_dict[dom_pulses.first] = dom_times;
-        dom_charges_dict[dom_pulses.first] = dom_charges;
-        charges.extend(dom_charges);
-        times.extend(dom_times);
+        dom_times_dict[dom_pulses.first] = stdVecToNumpyArray(dom_times);
+        dom_charges_dict[dom_pulses.first] = stdVecToNumpyArray(dom_charges);
+
+        // extend total charges and times
+        // reserve() is optional - just to improve performance
+        charges.reserve(charges.size()
+                        + distance(dom_charges.begin(), dom_charges.end()));
+        charges.insert(charges.end(), dom_charges.begin(), dom_charges.end());
+
+        times.reserve(times.size()
+                      + distance(dom_times.begin(), dom_times.end()));
+        times.insert(times.end(), dom_times.begin(), dom_times.end());
+
     }
-    boost::python::object charges_2 = stdVecToNumpyArray(charges_vec);
+    boost::python::object charges_numpy = stdVecToNumpyArray(charges);
+    boost::python::object times_numpy = stdVecToNumpyArray(times);
 
     return  boost::python::make_tuple(
-                            charges_2, times, dom_times_dict, dom_charges_dict );
+                charges_numpy, times_numpy, dom_times_dict, dom_charges_dict );
 }
 
 
