@@ -31,12 +31,9 @@ class get_numpy_include(object):
     until it is actually installed, so that the ``get_include()``
     method can be invoked. """
 
-    def __init__(self, user=False):
-        self.user = user
-
     def __str__(self):
         import numpy
-        return numpy.get_include(self.user)
+        return numpy.get_include()
 
 
 def get_icecube_includes():
@@ -59,7 +56,6 @@ def get_boost_include_list():
     """
     include_dirs = get_icecube_includes()
     include_dirs.append(get_numpy_include())
-    include_dirs.append(get_numpy_include(user=True))
     return include_dirs
 
 
