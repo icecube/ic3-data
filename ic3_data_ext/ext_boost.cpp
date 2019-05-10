@@ -75,8 +75,8 @@ boost::python::object stdVecToNumpyArray( std::vector<double> const& vec )
 
 template <typename T>
 inline boost::python::tuple restructure_pulses(
-                                      const boost::python::object& pulse_map_obj
-                                    ) {
+                                  const boost::python::object& pulse_map_obj
+                                ) {
 
     // Get pulse map
     I3RecoPulseSeriesMap& pulse_map = boost::python::extract<I3RecoPulseSeriesMap&>(pulse_map_obj);
