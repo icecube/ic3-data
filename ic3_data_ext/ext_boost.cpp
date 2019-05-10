@@ -100,12 +100,10 @@ inline boost::python::tuple restructure_pulses(
 
         // extend total charges and times
         // reserve() is optional - just to improve performance
-        charges.reserve(charges.size()
-                        + distance(dom_charges.begin(), dom_charges.end()));
+        charges.reserve(charges.size() + dom_charges.size());
         charges.insert(charges.end(), dom_charges.begin(), dom_charges.end());
 
-        times.reserve(times.size()
-                      + distance(dom_times.begin(), dom_times.end()));
+        times.reserve(times.size() + dom_times.size());
         times.insert(times.end(), dom_times.begin(), dom_times.end());
 
     }
