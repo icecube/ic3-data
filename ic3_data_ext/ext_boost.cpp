@@ -94,12 +94,17 @@ inline boost::python::tuple restructure_pulses(
         for (unsigned int i=0; i < dom_pulses.second.size(); i++ ){
             dom_charges.push_back(dom_pulses.second.at(i).GetCharge());
             dom_times.push_back(dom_pulses.second.at(i).GetTime());
-
-            charges.push_back(dom_pulses.second.at(i).GetCharge());
-            times.push_back(dom_pulses.second.at(i).GetTime());
         }
         dom_times_dict[dom_pulses.first] = stdVecToNumpyArray(dom_times);
         dom_charges_dict[dom_pulses.first] = stdVecToNumpyArray(dom_charges);
+
+        // extend total charges and times
+        // reserve() is optional - just to improve performance
+        charges.reserve(charges.size() + dom_charges.size());
+        charges.insert(charges.end(), dom_charges.begin(), dom_charges.end());
+
+        times.reserve(times.size() + dom_times.size());
+        times.insert(times.end(), dom_times.begin(), dom_times.end());
 
     }
     boost::python::object charges_numpy = stdVecToNumpyArray(charges);
