@@ -166,11 +166,6 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                     for (I3TimeWindowSeriesMap::const_iterator i =
                         exclusions_segment->begin(); i !=
                         exclusions_segment->end(); i++){
-                            std::cout << "NEED TO ADD: " << i->first << std::endl;
-                            for (const auto& tw : i->second){
-                                std::cout << "\tStart: " << tw.GetStart()
-                                          << " End: " << tw.GetStop() << std::endl;
-                            }
                             exclusions[i->first] = exclusions[i->first] |
                                 i->second;
                         }
@@ -201,8 +196,8 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
     for (const auto& tws: exclusions){
         std::cout << "Exclusion windows for OMKey " << tws.first << std::endl;
         for (const auto& tw : tws.second){
-            std::cout << "\tStart: " << tw.GetStart()
-                      << " End: " << tw.GetStop() << std::endl;
+        //    std::cout << "\tStart: " << tw.GetStart()
+        //              << " End: " << tw.GetStop() << std::endl;
         }
     }
     // ------------------------------------------------
