@@ -157,12 +157,20 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                 frame.Get<I3VectorOMKeyConstPtr>(mapname);
 
             if (exclusions_segment && partial_exclusion) {
+                /* These are TimeWindowSeries from which we have to remove
+                pulses that lie within, since partial exclusion is true and
+                we want to keep the rest of the pulses of a DOM.
+                */
                     for (I3TimeWindowSeriesMap::const_iterator i =
                         exclusions_segment->begin(); i !=
                         exclusions_segment->end(); i++)
                             exclusions[i->first] = exclusions[i->first] |
                                 i->second;
             } else if (exclusions_segment && !partial_exclusion) {
+                /* These are TimeWindowSeries, but since partial exclusion
+                is false, we will remove all DOMs that have exclusion time
+                windows defined.
+                */
                     for (I3TimeWindowSeriesMap::const_iterator i =
                         exclusions_segment->begin(); i !=
                         exclusions_segment->end(); i++){
@@ -171,6 +179,10 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                         }
 
             } else if (excludedoms) {
+                /* These are whole DOMs to be ommited.
+                Examples can be BrightDOMs which is a list of DOM OMKeys that
+                will be completely removed.
+                */
                     BOOST_FOREACH(const OMKey &key, *excludedoms){
                             //exclusions[key].push_back(I3TimeWindow());
                             pulses_masked.erase(key);
