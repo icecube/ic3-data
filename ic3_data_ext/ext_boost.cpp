@@ -115,16 +115,16 @@ inline boost::python::tuple restructure_pulses(
                 charges_numpy, times_numpy, dom_times_dict, dom_charges_dict );
 }
 
-void get_valid_pulse_map(const boost::python::object& frame_obj,
+void get_valid_pulse_map(boost::python::object& frame_obj,
                          const boost::python::object& pulse_key_obj,
                          const boost::python::list& excluded_doms,
                          const boost::python::object& partial_exclusion_obj,
                          const boost::python::object& verbose_obj){
 
     // extract c++ data types from python objects
-    const I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
-    const std::string& pulse_key =
-        boost::python::extract<I3Frame&>(pulse_key_obj);
+    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const std::string pulse_key =
+        boost::python::extract<std::string>(pulse_key_obj);
     const bool partial_exclusion =
         boost::python::extract<bool>(partial_exclusion_obj);
     const bool verbose = boost::python::extract<bool>(verbose_obj);
@@ -134,7 +134,9 @@ void get_valid_pulse_map(const boost::python::object& frame_obj,
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
     // write pulses to frame
-    frame.Put(pulse_key + "_masked", pulse_key);
+    I3RecoPulseSeriesMapPtr fr_pulses =
+        boost::make_shared<I3RecoPulseSeriesMap>(pulses);
+    frame.Put(pulse_key + "_masked", fr_pulses);
 
 }
 
