@@ -193,7 +193,6 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
             }
     }
 
-    //for (const auto& tws: exclusions){
     for (I3TimeWindowSeriesMap::const_iterator tws = exclusions.begin();
                 tws != exclusions.end(); tws++){
         std::cout << "Exclusion windows for OMKey " << tws->first << std::endl;
@@ -204,8 +203,6 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
         I3TimeWindowSeries effective_readouts;
         effective_readouts.push_back(I3TimeWindow());
         {
-            //I3TimeWindowSeriesMap::const_iterator tws =
-            //    exclusions.find(i->first);
             // The effective readout windows are the set difference of the
             // global readout window and exclusion windows
             effective_readouts = effective_readouts & (~(tws->second));
@@ -228,26 +225,18 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
             // define pointer to begin and end of pulse series
             auto begin(rps.cbegin()), end(rps.cend());
             for (auto &readout : effective_readouts) {
-                auto pulse_time_sort = [](const I3RecoPulse &p, double t) { return p.GetTime() < t; };
-                begin = std::lower_bound(begin, end, readout.GetStart(), pulse_time_sort);
-                end = std::lower_bound(begin, end, readout.GetStop(), pulse_time_sort);
+                auto pulse_time_sort = [](const I3RecoPulse &p, double t) {
+                                                     return p.GetTime() < t; };
+                begin = std::lower_bound(begin, end, readout.GetStart(),
+                                         pulse_time_sort);
+                end = std::lower_bound(begin, end, readout.GetStop(),
+                                       pulse_time_sort);
 
-                std::cout << "\tChosen start: " << begin->GetTime()
-                          << " end: " << end->GetTime() << std::endl;
+                // insert valid pulses
+                masked_pulse_series.insert(masked_pulse_series.end(),
+                                           begin, end);
 
-                masked_pulse_series.insert(masked_pulse_series.end(), begin, end);
-
-                // Now go through all valid pulses and add them
-                for (auto pulse_iterator = begin; pulse_iterator != end;
-                     pulse_iterator++){
-                    std::cout << "\t\tPulse Charge: "
-                              << pulse_iterator->GetCharge() << " Time: "
-                              << pulse_iterator->GetTime() << std::endl;
-
-                    //masked_pulse_series.push_back(pulse_iterator);
-                    //masked_pulse_series.push_back(I3RecoPulse(pulse_iterator));
-                }
-
+                // update new begin and end position
                 begin = end;
                 end = rps.cend();
             }
@@ -255,11 +244,6 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
             // delete old pulse series and update with masked pulse series
             pulses_masked.erase(tws->first);
             pulses_masked[tws->first] = masked_pulse_series;
-        }
-
-        for (const auto& tw : tws->second){
-            std::cout << "\tStart: " << tw.GetStart()
-                      << " End: " << tw.GetStop() << std::endl;
         }
     }
     // ------------------------------------------------
