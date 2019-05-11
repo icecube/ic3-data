@@ -193,13 +193,13 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
             }
     }
 
-    for (const auto& tws: exclusions){
+    /*for (const auto& tws: exclusions){
         // std::cout << "Exclusion windows for OMKey " << tws.first << std::endl;
         for (const auto& tw : tws.second){
         //    std::cout << "\tStart: " << tw.GetStart()
         //              << " End: " << tw.GetStop() << std::endl;
         }
-    }
+    }*/
     // ------------------------------------------------
 
     // write pulses to frame
