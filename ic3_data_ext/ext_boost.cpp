@@ -5,7 +5,9 @@
 #include "icetray/I3Frame.h"
 #include "dataclasses/physics/I3RecoPulse.h"
 #include "dataclasses/I3Map.h"
+#include "dataclasses/I3TimeWindow.h"
 #include <boost/python.hpp>
+#include <boost/foreach.hpp>
 #include "numpy/ndarrayobject.h"
 
 
@@ -117,7 +119,7 @@ inline boost::python::tuple restructure_pulses(
 
 void get_valid_pulse_map(boost::python::object& frame_obj,
                          const boost::python::object& pulse_key_obj,
-                         const boost::python::list& excluded_doms,
+                         const boost::python::list& excluded_doms_obj,
                          const boost::python::object& partial_exclusion_obj,
                          const boost::python::object& verbose_obj){
 
@@ -129,11 +131,53 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
         boost::python::extract<bool>(partial_exclusion_obj);
     const bool verbose = boost::python::extract<bool>(verbose_obj);
 
+    std::vector<std::string> excluded_doms;
+    for (int i = 0; i < len(excluded_doms_obj); ++i){
+        excluded_doms.push_back(
+                boost::python::extract<std::string>(excluded_doms_obj[i]));
+    }
+
     // get pulses
     const I3RecoPulseSeriesMap& pulses =
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
+    // copy pulses so that we can modify them
     I3RecoPulseSeriesMap pulses_masked = I3RecoPulseSeriesMap(pulses);
+
+    // ------------------------------------------------
+    // remove all excluded DOMs (!= I3TimeWindowSeries)
+    // ------------------------------------------------
+    I3TimeWindowSeriesMap exclusions;
+    BOOST_FOREACH(const std::string &mapname, excluded_doms) {
+
+            I3TimeWindowSeriesMapConstPtr exclusions_segment =
+                frame.Get<I3TimeWindowSeriesMapConstPtr>(mapname);
+
+            I3VectorOMKeyConstPtr excludedoms =
+                frame.Get<I3VectorOMKeyConstPtr>(mapname);
+
+            if (exclusions_segment && partial_exclusion) {
+                    for (I3TimeWindowSeriesMap::const_iterator i =
+                        exclusions_segment->begin(); i !=
+                        exclusions_segment->end(); i++)
+                            exclusions[i->first] = exclusions[i->first] |
+                                i->second;
+            } else if (exclusions_segment && !partial_exclusion) {
+                    for (I3TimeWindowSeriesMap::const_iterator i =
+                        exclusions_segment->begin(); i !=
+                        exclusions_segment->end(); i++){
+                            //exclusions[i->first].push_back(I3TimeWindow());
+                            pulses_masked.erase(i->first);
+                        }
+
+            } else if (excludedoms) {
+                    BOOST_FOREACH(const OMKey &key, *excludedoms){
+                            //exclusions[key].push_back(I3TimeWindow());
+                            pulses_masked.erase(key);
+                        }
+            }
+    }
+    // ------------------------------------------------
 
     // write pulses to frame
     I3RecoPulseSeriesMapPtr fr_pulses =
