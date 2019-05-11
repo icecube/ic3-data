@@ -237,7 +237,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                      pulse_iterator++){
                     std::cout << "\t\tPulse Charge: "
                               << pulse_iterator->GetCharge() << " Time: "
-                              << pulse_iterator->GetCharge() << std::endl;
+                              << pulse_iterator->GetTime() << std::endl;
                     //masked_pulse_series.push_back(pulse_iterator);
                 }
 
