@@ -133,9 +133,11 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
     const I3RecoPulseSeriesMap& pulses =
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
+    I3RecoPulseSeriesMap pulses_masked = I3RecoPulseSeriesMap(pulses);
+
     // write pulses to frame
     I3RecoPulseSeriesMapPtr fr_pulses =
-        boost::make_shared<I3RecoPulseSeriesMap>(pulses);
+        boost::make_shared<I3RecoPulseSeriesMap>(pulses_masked);
     frame.Put(pulse_key + "_masked", fr_pulses);
 
 }
