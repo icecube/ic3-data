@@ -201,20 +201,40 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
         // ----------------------------
         // Get effective readout window
         // ----------------------------
-        I3RecoPulseSeriesMap::const_iterator ps =
-            pulses_masked.find(tws->first);
         I3TimeWindowSeries effective_readouts;
         effective_readouts.push_back(I3TimeWindow());
         {
-                //I3TimeWindowSeriesMap::const_iterator tws =
-                //    exclusions.find(i->first);
-                // The effective readout windows are the set difference of the
-                // global readout window and exclusion windows
-                if (tws != exclusions.end()) {
-                    effective_readouts = effective_readouts & (~(tws->second));
-                }
+            //I3TimeWindowSeriesMap::const_iterator tws =
+            //    exclusions.find(i->first);
+            // The effective readout windows are the set difference of the
+            // global readout window and exclusion windows
+            effective_readouts = effective_readouts & (~(tws->second));
         }
         // ----------------------------
+
+        I3RecoPulseSeriesMap::const_iterator ps =
+            pulses_masked.find(tws->first);
+
+        // make sure key exists in pulses
+        if (ps != pulses_masked.end()){
+
+            // make iterator point at pulse series for the given OMKey
+            I3RecoPulseSeries rps = ps->second;
+
+            // define pointer to begin and end of pulse series
+            auto begin(rps.cbegin()), end(rps.cend());
+            for (auto &readout : effective_readouts) {
+                auto pulse_time_sort = [](const I3RecoPulse &p, double t) { return p.GetTime() < t; };
+                begin = std::lower_bound(begin, end, readout.GetStart(), pulse_time_sort);
+                end = std::lower_bound(begin, end, readout.GetStop(), pulse_time_sort);
+
+                std::cout << "\tChosen start: " << begin->GetTime()
+                          << " end: " << end->GetTime() << std::endl;
+
+                begin = end;
+                end = rps.cend();
+            }
+        }
 
         for (const auto& tw : tws->second){
             std::cout << "\tStart: " << tw.GetStart()
