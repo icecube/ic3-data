@@ -119,8 +119,7 @@ void get_valid_pulse_map(const boost::python::object& frame_obj,
                          const boost::python::object& pulse_key_obj,
                          const boost::python::list& excluded_doms,
                          const boost::python::object& partial_exclusion_obj,
-                         const boost::python::object& verbose_obj,
-                         ){
+                         const boost::python::object& verbose_obj){
 
     // extract c++ data types from python objects
     const I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
