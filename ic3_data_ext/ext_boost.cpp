@@ -193,13 +193,34 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
             }
     }
 
-    /*for (const auto& tws: exclusions){
-        // std::cout << "Exclusion windows for OMKey " << tws.first << std::endl;
-        for (const auto& tw : tws.second){
-        //    std::cout << "\tStart: " << tw.GetStart()
-        //              << " End: " << tw.GetStop() << std::endl;
+    //for (const auto& tws: exclusions){
+    for (I3TimeWindowSeriesMap::const_iterator tws = exclusions.begin();
+                tws != exclusions.end(); tws++){
+        std::cout << "Exclusion windows for OMKey " << tws->first << std::endl;
+
+        // ----------------------------
+        // Get effective readout window
+        // ----------------------------
+        I3RecoPulseSeriesMap::const_iterator ps =
+            pulses_masked.find(tws->first);
+        I3TimeWindowSeries effective_readouts;
+        effective_readouts.push_back(I3TimeWindow());
+        {
+                //I3TimeWindowSeriesMap::const_iterator tws =
+                //    exclusions.find(i->first);
+                // The effective readout windows are the set difference of the
+                // global readout window and exclusion windows
+                if (tws != exclusions.end()) {
+                    effective_readouts = effective_readouts & (~(tws->second));
+                }
         }
-    }*/
+        // ----------------------------
+
+        for (const auto& tw : tws->second){
+            std::cout << "\tStart: " << tw.GetStart()
+                      << " End: " << tw.GetStop() << std::endl;
+        }
+    }
     // ------------------------------------------------
 
     // write pulses to frame
