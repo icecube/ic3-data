@@ -91,7 +91,7 @@ inline boost::python::tuple restructure_pulses(
         std::vector<double> dom_charges;
         std::vector<double> dom_times;
 
-        for (auto const& pulse : dom_pulses){
+        for (auto const& pulse : dom_pulses.second){
             dom_charges.push_back(pulse.GetCharge());
             dom_times.push_back(pulse.GetTime());
         }
