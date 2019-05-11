@@ -235,6 +235,8 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                 std::cout << "\tChosen start: " << begin->GetTime()
                           << " end: " << end->GetTime() << std::endl;
 
+                masked_pulse_series.insert(masked_pulse_series.end(), begin, end);
+
                 // Now go through all valid pulses and add them
                 for (auto pulse_iterator = begin; pulse_iterator != end;
                      pulse_iterator++){
@@ -243,7 +245,6 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                               << pulse_iterator->GetTime() << std::endl;
 
                     //masked_pulse_series.push_back(pulse_iterator);
-                    masked_pulse_series.insert(masked_pulse_series.end(), begin, end);
                     //masked_pulse_series.push_back(I3RecoPulse(pulse_iterator));
                 }
 
