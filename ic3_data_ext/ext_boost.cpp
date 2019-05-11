@@ -91,9 +91,9 @@ inline boost::python::tuple restructure_pulses(
         std::vector<double> dom_charges;
         std::vector<double> dom_times;
 
-        for (unsigned int i=0; i < dom_pulses.second.size(); i++ ){
-            dom_charges.push_back(dom_pulses.second.at(i).GetCharge());
-            dom_times.push_back(dom_pulses.second.at(i).GetTime());
+        for (auto const& pulse : dom_pulses){
+            dom_charges.push_back(pulse.GetCharge());
+            dom_times.push_back(pulse.GetTime());
         }
         dom_times_dict[dom_pulses.first] = stdVecToNumpyArray(dom_times);
         dom_charges_dict[dom_pulses.first] = stdVecToNumpyArray(dom_charges);
