@@ -235,6 +235,9 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                 // Now go through all valid pulses and add them
                 for (auto pulse_iterator = begin; pulse_iterator != end;
                      pulse_iterator++){
+                    std::cout << "\t\tPulse Charge: "
+                              << pulse_iterator->GetCharge() << " Time: "
+                              << pulse_iterator->GetCharge() << std::endl;
                     //masked_pulse_series.push_back(pulse_iterator);
                 }
 
