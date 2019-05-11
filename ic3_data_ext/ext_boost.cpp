@@ -2,6 +2,7 @@
 #include <string>
 #include <math.h>
 
+#include "icetray/I3Frame.h"
 #include "dataclasses/physics/I3RecoPulse.h"
 #include "dataclasses/I3Map.h"
 #include <boost/python.hpp>
@@ -114,6 +115,30 @@ inline boost::python::tuple restructure_pulses(
                 charges_numpy, times_numpy, dom_times_dict, dom_charges_dict );
 }
 
+void get_valid_pulse_map(const boost::python::object& frame_obj,
+                         const boost::python::object& pulse_key_obj,
+                         const boost::python::list& excluded_doms,
+                         const boost::python::object& partial_exclusion_obj,
+                         const boost::python::object& verbose_obj,
+                         ){
+
+    // extract c++ data types from python objects
+    const I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const std::string& pulse_key =
+        boost::python::extract<I3Frame&>(pulse_key_obj);
+    const bool partial_exclusion =
+        boost::python::extract<bool>(partial_exclusion_obj);
+    const bool verbose = boost::python::extract<bool>(verbose_obj);
+
+    // get pulses
+    const I3RecoPulseSeriesMap& pulses =
+        frame.Get<I3RecoPulseSeriesMap>(pulse_key);
+
+    // write pulses to frame
+    frame.Put(pulse_key + "_masked", pulse_key);
+
+}
+
 
 BOOST_PYTHON_MODULE(ext_boost)
 {
@@ -123,4 +148,7 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("restructure_pulses",
                        &restructure_pulses<double>);
+
+    boost::python::def("get_valid_pulse_map",
+                       &get_valid_pulse_map);
 }
