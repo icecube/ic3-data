@@ -165,9 +165,15 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                 */
                     for (I3TimeWindowSeriesMap::const_iterator i =
                         exclusions_segment->begin(); i !=
-                        exclusions_segment->end(); i++)
+                        exclusions_segment->end(); i++){
+                            std::cout << "NEED TO ADD: " << i->first << std::endl;
+                            for (const auto& tw : i->second){
+                                std::cout << "\tStart: " << tw.GetStart()
+                                          << " End: " << tw.GetStop() << std::endl;
+                            }
                             exclusions[i->first] = exclusions[i->first] |
                                 i->second;
+                        }
             } else if (exclusions_segment && !partial_exclusion) {
                 /* These are TimeWindowSeries, but since partial exclusion
                 is false, we will remove all DOMs that have exclusion time
