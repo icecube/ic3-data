@@ -195,7 +195,6 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
 
     for (I3TimeWindowSeriesMap::const_iterator tws = exclusions.begin();
                 tws != exclusions.end(); tws++){
-        std::cout << "Exclusion windows for OMKey " << tws->first << std::endl;
 
         // ----------------------------
         // Get effective readout window
@@ -242,7 +241,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
             }
 
             // delete old pulse series and update with masked pulse series
-            pulses_masked.erase(tws->first);
+            //pulses_masked.erase(tws->first);
             pulses_masked[tws->first] = masked_pulse_series;
         }
     }
