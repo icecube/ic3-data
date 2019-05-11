@@ -224,14 +224,14 @@ inline py::list get_time_range(const py::array_t<T> charges,
             //-----------------------
 
             // save charge sum for time bin
-            cum_sum.at(bin_index) = bin_charge_sum;
+            cum_sum[bin_index] = bin_charge_sum;
 
             // update charge sum
             charge_sum += bin_charge_sum;
             if( bin_index - window_bin_size >= 0 ){
                 // subtract charge of time bin not
                 // included anymore in current time window
-                charge_sum -= cum_sum.at(bin_index - window_bin_size);
+                charge_sum -= cum_sum[bin_index - window_bin_size];
             }
 
 
