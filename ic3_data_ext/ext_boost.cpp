@@ -212,15 +212,18 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
         }
         // ----------------------------
 
-        I3RecoPulseSeriesMap::const_iterator ps =
+        I3RecoPulseSeriesMap::const_iterator dom_pulse_ptr =
             pulses_masked.find(tws->first);
 
         // make sure key exists in pulses
-        if (ps != pulses_masked.end()){
+        if (dom_pulse_ptr != pulses_masked.end()){
 
             // make iterator point at pulse series for the given OMKey
-            I3RecoPulseSeries rps = ps->second;
+            I3RecoPulseSeries rps = dom_pulse_ptr->second;
             I3RecoPulseSeries masked_pulse_series = I3RecoPulseSeries();
+
+            // reserve memory (Note: this reserves more than necessary)
+            masked_pulse_series.reserve(rps.size());
 
             // define pointer to begin and end of pulse series
             auto begin(rps.cbegin()), end(rps.cend());
@@ -238,7 +241,10 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                     std::cout << "\t\tPulse Charge: "
                               << pulse_iterator->GetCharge() << " Time: "
                               << pulse_iterator->GetTime() << std::endl;
+
                     //masked_pulse_series.push_back(pulse_iterator);
+                    masked_pulse_series.insert(masked_pulse_series.end(), begin, end);
+                    //masked_pulse_series.push_back(I3RecoPulse(pulse_iterator));
                 }
 
                 begin = end;
