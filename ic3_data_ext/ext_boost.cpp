@@ -7,7 +7,6 @@
 #include "dataclasses/I3Map.h"
 #include "dataclasses/I3TimeWindow.h"
 #include <boost/python.hpp>
-// #include <boost/foreach.hpp>
 #include "numpy/ndarrayobject.h"
 
 
@@ -148,7 +147,6 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
     // remove all excluded DOMs (!= I3TimeWindowSeries)
     // ------------------------------------------------
     I3TimeWindowSeriesMap exclusions;
-    // BOOST_FOREACH(const std::string &mapname, excluded_doms) {
     for (const std::string& mapname: excluded_doms) {
 
             I3TimeWindowSeriesMapConstPtr exclusions_segment =
@@ -187,12 +185,19 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                 Examples can be BrightDOMs which is a list of DOM OMKeys that
                 will be completely removed.
                 */
-                    // BOOST_FOREACH(const OMKey &key, *excludedoms){
                     for (const OMKey& key: *excludedoms){
                             //exclusions[key].push_back(I3TimeWindow());
                             pulses_masked.erase(key);
                         }
             }
+    }
+
+    for (const auto& tws: exclusions){
+        std::cout << "Exclusion windows for OMKey " << tws.first << std::endl;
+        for (const auto& tw : tws.second){
+            std::cout << "\tStart: " << tw.GetStart()
+                      << " End: " << tw.GetStop() << std::endl;
+        }
     }
     // ------------------------------------------------
 
