@@ -265,9 +265,12 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
     frame.Put(pulse_key + "_masked", fr_pulses);
 
     if (verbose){
-        log_info(
+        /*log_info(
             "[MaskPulses] Removed %d DOMs and %d additional pulses from %s",
-            removed_doms, removed_pulses, pulse_key.c_str());
+            removed_doms, removed_pulses, pulse_key.c_str());*/
+        std::cout << "[MaskPulses] Removed " << removed_doms <<" DOMs and "
+                  << removed_pulses << " additional pulses from "
+                  << pulse_key << std::endl;
     }
 
 }
