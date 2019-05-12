@@ -106,9 +106,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # start timer
         start_time = timeit.default_timer()
 
-        # initalize data fields of data container if new batch is started
+        # initialize data fields of data container if new batch is started
         if self._batch_index == self._container.batch_size:
-            self._container.initalize()
+            self._container.initialize()
             self._batch_index = 0
 
         # get pulses

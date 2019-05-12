@@ -110,11 +110,11 @@ class DNNDataContainer(object):
             raise ValueError('Data container is already set up!')
 
         # create data fields
-        self._initalize()
+        self.initialize()
 
         self._is_ready = True
 
-    def _initalize(self):
+    def initialize(self):
         """Initialize empty data fields.
         """
 
