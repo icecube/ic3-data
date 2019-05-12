@@ -267,7 +267,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
     if (verbose){
         log_info(
             "[MaskPulses] Removed %d DOMs and %d additional pulses from %s",
-            removed_doms, removed_pulses, pulse_key);
+            removed_doms, removed_pulses, pulse_key.c_str());
     }
 
 }
