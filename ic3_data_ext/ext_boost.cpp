@@ -187,8 +187,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                         exclusions_segment->begin(); i !=
                         exclusions_segment->end(); i++){
                             //exclusions[i->first].push_back(I3TimeWindow());
-                            pulses_masked.erase(i->first);
-                            removed_doms++;
+                            removed_doms += pulses_masked.erase(i->first);
                         }
 
             } else if (excludedoms) {
@@ -198,8 +197,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                 */
                     for (const OMKey& key: *excludedoms){
                             //exclusions[key].push_back(I3TimeWindow());
-                            pulses_masked.erase(key);
-                            removed_doms++;
+                            removed_doms += pulses_masked.erase(key);
                         }
             }
     }
