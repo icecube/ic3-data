@@ -9,10 +9,11 @@ from icecube import dataclasses
 class DNNDataContainer(object):
     '''Class structure to hold DNN input data
     '''
-    def __init__(self):
+    def __init__(self, batch_size=1):
         """Summary
         """
         self.config = {}
+        self.batch_size = batch_size
         self._is_configured = False
         self._is_ready = False
 
@@ -109,19 +110,26 @@ class DNNDataContainer(object):
             raise ValueError('Data container is already set up!')
 
         # create data fields
-        self.initalize()
+        self._initalize()
 
         self._is_ready = True
 
-    def initalize(self):
+    def _initalize(self):
         """Initialize empty data fields.
         """
-        batch_size = 1
-        self.x_ic78 = np.zeros([batch_size, 10, 10, 60,
-                                self.config['num_bins']])
-        self.x_deepcore = np.zeros([batch_size, 8, 60,
-                                    self.config['num_bins']])
 
+        # data fields that can be used as input into the network during
+        # inference.
+        self.x_ic78 = np.zeros([self.batch_size, 10, 10, 60,
+                                self.config['num_bins']])
+        self.x_deepcore = np.zeros([self.batch_size, 8, 60,
+                                    self.config['num_bins']])
+        self.global_time_offset_batch = np.zeros([self.batch_size])
+        self.runtime_batch = np.zeros([self.batch_size])
+
+        # data fields to hold I3Data to be written to frame
+        # (This does not require batching because values are properly
+        #  written to the frame for each event by the DNNContainerHandler.)
         self.bin_indices = dataclasses.I3MapKeyVectorInt()
         self.bin_values = dataclasses.I3MapKeyVectorDouble()
         self.global_time_offset = dataclasses.I3Double()

@@ -52,6 +52,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._cascade_key = self.GetParameter("CascadeKey")
         self._output_key = self.GetParameter("OutputKey")
 
+        # initalize data fields of data container
+        self._container.initalize()
+        self._batch_index = 0
+
         self._config = dict(self._container.config)
 
         if not self._container.is_ready():
@@ -102,8 +106,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # start timer
         start_time = timeit.default_timer()
 
-        # initalize data fields of data container
-        self._container.initalize()
+        # initalize data fields of data container if new batch is started
+        if self._batch_index == self._container.batch_size:
+            self._container.initalize()
+            self._batch_index = 0
 
         # get pulses
         pulses = frame[self._pulse_key]
@@ -123,6 +129,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                                                          charges=charges,
                                                          times=times)
         self._container.global_time_offset.value = global_time_offset
+        self._container.global_time_offset_batch[self._batch_index] = \
+            global_time_offset
 
         # loop through hit DOMs
         for om_key, dom_pulses in pulses:
@@ -145,7 +153,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
             # Calculate times relative to local offset
             rel_dom_times -= local_time_offset
-            total_time_offset = global_time_offset + local_time_offset
+            # total_time_offset = global_time_offset + local_time_offset
 
             # get DNN input data for this DOM
             bin_values_list, bin_indices_list = self._data_format_func(
@@ -169,7 +177,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             for value, index in zip(bin_values_list, bin_indices_list):
                 if string > 78:
                     # deep core
-                    self._container.x_deepcore[0, string - 78 - 1, dom - 1,
+                    self._container.x_deepcore[self._batch_index,
+                                               string - 78 - 1, dom - 1,
                                                index] = value
                 else:
                     # IC78
@@ -177,11 +186,14 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                     # Center of Detector is a,b = 0,0
                     # a goes from -4 to 5
                     # b goes from -5 to 4
-                    self._container.x_ic78[0, a + 4, b + 5, dom - 1,
+                    self._container.x_ic78[self._batch_index,
+                                           a + 4, b + 5, dom - 1,
                                            index] = value
 
         # measure time
-        self._container.runtime.value = timeit.default_timer() - start_time
+        elapsed_time = timeit.default_timer() - start_time
+        self._container.runtime.value = elapsed_time
+        self._container.runtime_batch[self._batch_index] = elapsed_time
 
         # Write data to frame
         if self._output_key is not None:
@@ -193,6 +205,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                 self._container.global_time_offset
             frame[self._output_key + '_runtime'] = \
                 self._container.runtime
+
+        # increase the batch event index by one
+        self._batch_index += 1
 
         self.PushFrame(frame)
 
