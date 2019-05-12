@@ -53,7 +53,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._output_key = self.GetParameter("OutputKey")
 
         # initalize data fields of data container
-        self._container.initalize()
+        self._container.initialize()
         self._batch_index = 0
 
         self._config = dict(self._container.config)
