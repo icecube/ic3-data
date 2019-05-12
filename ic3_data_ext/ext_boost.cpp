@@ -121,6 +121,11 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                          const boost::python::list& excluded_doms_obj,
                          const boost::python::object& partial_exclusion_obj,
                          const boost::python::object& verbose_obj){
+    /*
+    This method creates a new pulse series based on the given pulse series
+    name, but excludes pulses and DOMs as specified with the excluded_doms
+    and partial_exclusion.
+    */
 
     // extract c++ data types from python objects
     I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
@@ -135,6 +140,10 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
         excluded_doms.push_back(
                 boost::python::extract<std::string>(excluded_doms_obj[i]));
     }
+
+    // keep track of removed number of pulses and DOMs
+    unsigned int removed_doms = 0;
+    unsigned int removed_pulses = 0;
 
     // get pulses
     const I3RecoPulseSeriesMap& pulses =
@@ -179,6 +188,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                         exclusions_segment->end(); i++){
                             //exclusions[i->first].push_back(I3TimeWindow());
                             pulses_masked.erase(i->first);
+                            removed_doms++;
                         }
 
             } else if (excludedoms) {
@@ -189,6 +199,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
                     for (const OMKey& key: *excludedoms){
                             //exclusions[key].push_back(I3TimeWindow());
                             pulses_masked.erase(key);
+                            removed_doms++;
                         }
             }
     }
@@ -242,6 +253,7 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
 
             // delete old pulse series and update with masked pulse series
             //pulses_masked.erase(tws->first);
+            removed_pulses += rps.size() - masked_pulse_series.size();
             pulses_masked[tws->first] = masked_pulse_series;
         }
     }
@@ -251,6 +263,11 @@ void get_valid_pulse_map(boost::python::object& frame_obj,
     I3RecoPulseSeriesMapPtr fr_pulses =
         boost::make_shared<I3RecoPulseSeriesMap>(pulses_masked);
     frame.Put(pulse_key + "_masked", fr_pulses);
+
+    if (verbose){
+        log_info("[MaskPulses] Removed ",removed_doms, " DOMs and ",
+                 removed_pulses, "additional pulses from ", pulse_key);
+    }
 
 }
 

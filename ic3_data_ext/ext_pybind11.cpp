@@ -28,7 +28,7 @@ class MeanVarianceAccumulator{
         T t = 0.0;
         int n = 0;
 
-        void add_element(T value,T weight){
+        void add_element(const T& value, const T& weight){
             assert(weight >= 0.0);
 
             T q = value - this->wmean;
