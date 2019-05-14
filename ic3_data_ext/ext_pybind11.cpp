@@ -164,8 +164,8 @@ inline py::list get_summary_data( const py::array_t<T> dom_charges,
 template <typename T>
 inline py::list get_time_range(const py::array_t<T> charges,
                                const py::array_t<T> times,
-                               const T time_window_size = 6000.0
-                              ){
+                               const T time_window_size = 6000.0,
+                               const T step = 1.0){
 
     // unchecked: do not check array bounds
     // <1> charges must have ndim = 1
@@ -176,8 +176,19 @@ inline py::list get_time_range(const py::array_t<T> charges,
     int num_pulses = charges.shape(0);
 
     T start_t = 9000.0;
-
     if (num_pulses > 0) {
+
+        start_t = 0.0;
+
+        // average noise rate for detector in hits / ns
+        T noise_rate = 0.003;
+        T total_charge = 0;
+        for (unsigned int j = 0; j < num_pulses; j++){
+            total_charge += c_charges[j];
+        }
+
+        // threshold for which a shift of the time window is still allowed
+        T charge_threshold = -total_charge * 0.02;
 
         T max_charge_sum = 0.0;
 
@@ -189,7 +200,6 @@ inline py::list get_time_range(const py::array_t<T> charges,
         T min_time = T( int(c_times(0) / 1000) *1000);
         T max_time = T( int(c_times(num_pulses - 1) / 1000.) *1000.);
 
-        const T step = 500;
         const int window_bin_size = int(time_window_size / step);
         const int num_bins = int( (max_time - min_time) / step) + 1;
 
@@ -234,11 +244,20 @@ inline py::list get_time_range(const py::array_t<T> charges,
                 charge_sum -= cum_sum[bin_index - window_bin_size];
             }
 
+            // calculate the relative difference and compare it to
+            // fluctuations expected from the noise rate
+            T current_start_t = time - time_window_size + step;
+            T uncorrelated_time_window =
+                std::min(current_start_t - start_t, time_window_size);
+            T noise = uncorrelated_time_window * noise_rate;
+            T sqrt_noise = sqrt(noise);
+            T diff = charge_sum - max_charge_sum;
+            T rel_diff = diff / sqrt_noise;
 
             // update new time window
-            if( charge_sum > max_charge_sum){
+            if(rel_diff > -8 && diff > charge_threshold){
                 max_charge_sum = charge_sum;
-                start_t = time - time_window_size + step;
+                start_t = current_start_t;
                 if( start_t < min_time ){
                     start_t = min_time;
                 }
@@ -324,7 +343,8 @@ PYBIND11_PLUGIN(ext_pybind11) {
     m.def("get_time_range", &get_time_range<double>,
           get_time_range_docstr,
           py::arg("charges"), py::arg("times"),
-          py::arg("time_window_size") = 6000.0);
+          py::arg("time_window_size") = 6000.0,
+          py::arg("step") = 1.0);
 
 
     m.def("get_summary_data", &get_summary_data<double>,
