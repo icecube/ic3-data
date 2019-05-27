@@ -64,7 +64,7 @@ class DNNDataContainer(object):
         self.config['num_bins'] = num_bins
         self.config['relative_time_method'] = relative_time_method
         self.config['data_format'] = data_format
-        self.config['time_bins'] = time_bins
+        self.config['time_bins'] = [float(b) for b in time_bins]
         self.config['time_quantiles'] = time_quantiles
         self.config['autoencoder_settings'] = autoencoder_settings
         self.config['autoencoder_name'] = autoencoder_name
