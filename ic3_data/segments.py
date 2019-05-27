@@ -18,6 +18,7 @@ def CreateDNNData(tray, name,
                   AutoencoderSettings=None,
                   AutoencoderEncoderName=None,
                   CascadeKey='MCCascade',
+                  TimeWindowSize=6000,
                   OutputKey='dnn_data',
                   ):
 
@@ -40,5 +41,6 @@ def CreateDNNData(tray, name,
                    DNNDataContainer=container,
                    PulseKey=PulseKey,
                    CascadeKey=CascadeKey,
+                   TimeWindowSize=TimeWindowSize,
                    OutputKey=OutputKey,
                    If=lambda f: PulseKey in f)

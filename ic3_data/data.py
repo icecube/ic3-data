@@ -28,6 +28,11 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self.AddParameter("CascadeKey",
                           "Frame key for MC cascade",
                           'MCCascade')
+        self.AddParameter("TimeWindowSize",
+                          "The size in ns of the time window to use to "
+                          "calculate the global time offset if the chosen "
+                          "'relative_time_method' is 'time_range'.",
+                          6000)
         self.AddParameter("OutputKey",
                           "If provided, the dnn data will be written to the "
                           "frame. In this case the following keys will be "
@@ -50,6 +55,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._container = self.GetParameter("DNNDataContainer")
         self._pulse_key = self.GetParameter("PulseKey")
         self._cascade_key = self.GetParameter("CascadeKey")
+        self._time_window_size = self.GetParameter("TimeWindowSize")
         self._output_key = self.GetParameter("OutputKey")
 
         # initalize data fields of data container
@@ -276,9 +282,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         elif self._config['relative_time_method'].lower() == 'time_range':
             sorted_indices = np.argsort(times)
-            global_time_offset = get_time_range(charges[sorted_indices],
-                                                times[sorted_indices],
-                                                time_window_size=6000)[0]
+            global_time_offset = get_time_range(
+                                    charges[sorted_indices],
+                                    times[sorted_indices],
+                                    time_window_size=self._time_window_size)[0]
 
         elif self._config['relative_time_method'] is None:
             global_time_offset = 0.
