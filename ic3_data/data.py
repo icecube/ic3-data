@@ -15,7 +15,13 @@ from ic3_data.utils.autoencoder import autoencoder
 
 
 class DNNContainerHandler(icetray.I3ConditionalModule):
-    '''Module to fill DNNDataContainer and optionally add data to frame
+    '''Module to fill DNNDataContainer and optionally add data to frame.
+
+    Note: settings (apart from pulses) that will affect how the dnn input data
+    is calculated must be added to the DNNDataContainer and NOT here.
+    In addition, these settings must also be checked by dnn_reco's application
+    modules. Hence, dnn_reco must also export these new settings when a model
+    is exported.
     '''
     def __init__(self, context):
         icetray.I3ConditionalModule.__init__(self, context)
@@ -28,11 +34,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self.AddParameter("CascadeKey",
                           "Frame key for MC cascade",
                           'MCCascade')
-        self.AddParameter("TimeWindowSize",
-                          "The size in ns of the time window to use to "
-                          "calculate the global time offset if the chosen "
-                          "'relative_time_method' is 'time_range'.",
-                          6000)
         self.AddParameter("OutputKey",
                           "If provided, the dnn data will be written to the "
                           "frame. In this case the following keys will be "
@@ -55,7 +56,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._container = self.GetParameter("DNNDataContainer")
         self._pulse_key = self.GetParameter("PulseKey")
         self._cascade_key = self.GetParameter("CascadeKey")
-        self._time_window_size = self.GetParameter("TimeWindowSize")
         self._output_key = self.GetParameter("OutputKey")
 
         # initalize data fields of data container
@@ -280,12 +280,37 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         if self._config['relative_time_method'].lower() == 'cascade_vertex':
             global_time_offset = frame[self._cascade_key].time
 
+        elif self._config['relative_time_method'].lower()[:41] == \
+                'cascade_vertex_random_uniform_minus_plus_':
+            """
+            Create a global time offset by uniformly sampling around
+            vertex time. The bounds are defined by the minus and plus
+            arguments encoded in the relative_time_method name.
+            These must be separeted by an underscore '_'.
+            Example:
+                cascade_vertex_random_uniform_minus_plus_200_500
+                will sample from [vertex_time - 200, vertex_time + 500]
+            """
+            splits = \
+                self._config['relative_time_method'].lower()[41:].split('_')
+
+            assert len(splits) == 2, 'Check format of {!r}'.format(
+                self._config['relative_time_method'].lower())
+
+            minus = float(splits[0])
+            plus = float(splits[1])
+
+            assert minus <= plus, '{!r} !<= {!r}'.format(minus, plus)
+
+            vertex_time = frame[self._cascade_key].time
+            global_time_offset = np.random.uniform(vertex_time - minus,
+                                                   vertex_time + plus)
+
         elif self._config['relative_time_method'].lower() == 'time_range':
             sorted_indices = np.argsort(times)
-            global_time_offset = get_time_range(
-                                    charges[sorted_indices],
-                                    times[sorted_indices],
-                                    time_window_size=self._time_window_size)[0]
+            global_time_offset = get_time_range(charges[sorted_indices],
+                                                times[sorted_indices],
+                                                time_window_size=6000)[0]
 
         elif self._config['relative_time_method'] is None:
             global_time_offset = 0.
