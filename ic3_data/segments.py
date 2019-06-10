@@ -36,7 +36,7 @@ def CreateDNNData(tray, name,
     # set up container
     container.set_up()
 
-    tray.AddModule(DNNContainerHandler, 'DNNContainerHandler',
+    tray.AddModule(DNNContainerHandler, name + '_DNNContainerHandler',
                    DNNDataContainer=container,
                    PulseKey=PulseKey,
                    CascadeKey=CascadeKey,
