@@ -321,6 +321,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         elif self._config['relative_time_method'] == 'wf_quantile':
             global_time_offset = 0.
 
+        elif self._config['relative_time_method'].lower()[:20] == \
+                'local_dom_time_range':
+            global_time_offset = 0.
+
         else:
             raise ValueError('Option is uknown: {!r}'.format(
                                         self._config['relative_time_method']))
@@ -359,6 +363,53 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             local_time_offset = get_wf_quantile(
                                     times=dom_times,
                                     charges=dom_charges)
+
+        elif self._config['relative_time_method'].lower()[:20] == \
+                'local_dom_time_range':
+            """
+            Create a local DOM time offset by finding the time window with the
+            most charge. Parameters to the get_time_range function can be
+            passed by providing them in the method name.
+            These must be separeted by an underscore '_' and the assumed
+            order is:
+                time_window_size
+                step
+                rel_charge_threshold
+                rel_diff_threshold
+            That means, if you want to provde rel_diff_threshold, then you
+            must define all previous values as well.
+            Example:
+                local_dom_time_range_1000_5_0.02
+                will result in the paramters:
+                    time_window_size = 1000
+                    step = 5
+                    rel_charge_threshold = 0.02
+                    rel_diff_threshold = -1. [default value]
+            """
+
+            # define default values
+            parameter_values = [1500.0, 1.0, 0.02, -1.]
+
+            splits = \
+                self._config['relative_time_method'].lower()[20:].split('_')
+
+            index = 0
+            for split in splits:
+                if split:
+                    parameter_values[index] = float(split)
+                    index += 1
+
+            # get local DOM time offset given the pulses at the DOM
+            sorted_indices = np.argsort(dom_times)
+            local_time_offset = get_time_range(
+                                    dom_charges[sorted_indices],
+                                    dom_times[sorted_indices],
+                                    time_window_size=parameter_values[0],
+                                    step=parameter_values[1],
+                                    rel_charge_threshold=parameter_values[2],
+                                    rel_diff_threshold=parameter_values[3],
+                                    )[0]
+
         else:
             local_time_offset = 0.
         return local_time_offset

@@ -165,7 +165,9 @@ template <typename T>
 inline py::list get_time_range(const py::array_t<T> charges,
                                const py::array_t<T> times,
                                const T time_window_size = 6000.0,
-                               const T step = 1.0){
+                               const T step = 1.0,
+                               const T rel_charge_threshold = 0.02,
+                               const T rel_diff_threshold = -8.){
 
     // unchecked: do not check array bounds
     // <1> charges must have ndim = 1
@@ -188,7 +190,7 @@ inline py::list get_time_range(const py::array_t<T> charges,
         }
 
         // threshold for which a shift of the time window is still allowed
-        T charge_threshold = -total_charge * 0.02;
+        T charge_threshold = -total_charge * rel_charge_threshold;
 
         T max_charge_sum = 0.0;
 
@@ -255,7 +257,7 @@ inline py::list get_time_range(const py::array_t<T> charges,
             T rel_diff = diff / sqrt_noise;
 
             // update new time window
-            if(rel_diff > -8 && diff > charge_threshold){
+            if(rel_diff > rel_diff_threshold && diff > charge_threshold){
                 max_charge_sum = charge_sum;
                 start_t = current_start_t;
                 if( start_t < min_time ){
@@ -306,6 +308,17 @@ PYBIND11_PLUGIN(ext_pybind11) {
                     time_window_size : double
                         Size of time window in which to
                         look for the most accumulated charge
+                    step : double
+                        Step size for shifting the time window.
+                    rel_charge_threshold : double
+                        This defines the maximum relative charge deficit that
+                        the new time window may have, e.g. the new time window
+                        must have:
+                            charge_new <= charge_old * rel_charge_threshold
+                    rel_diff_threshold : double
+                        This defines the maximum relative difference of charge
+                        (delta charge / noise expectation) that the new time
+                        window may have.
 
                     Returns
                     -------
@@ -344,7 +357,9 @@ PYBIND11_PLUGIN(ext_pybind11) {
           get_time_range_docstr,
           py::arg("charges"), py::arg("times"),
           py::arg("time_window_size") = 6000.0,
-          py::arg("step") = 1.0);
+          py::arg("step") = 1.0,
+          py::arg("rel_charge_threshold") = 0.02,
+          py::arg("rel_diff_threshold") = -8.);
 
 
     m.def("get_summary_data", &get_summary_data<double>,

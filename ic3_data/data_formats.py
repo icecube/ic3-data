@@ -82,6 +82,57 @@ def charge_bins(dom_charges, rel_dom_times, global_time_offset,
     return bin_values_list, bin_indices_list
 
 
+def charge_bins_and_dom_time_offset(dom_charges, rel_dom_times,
+                                    global_time_offset, local_time_offset,
+                                    config, *args, **kwargs):
+    """Histogram charge in time bins as given by config['time_bins'] as well as
+    the total DOM time offset.
+
+    Parameters
+    ----------
+    dom_charges : numpy.ndarray
+        The charges of the pulses measured at the DOM.
+    rel_dom_times : numpy.ndarray
+        The relative times of the pulses measured at the DOM.
+    global_time_offset : float
+        The global time offset which is the same for all DOMs.
+        The rel_dom_times are relative to the sum of local and global
+        time offset.
+    local_time_offset : float
+        The local time offset which is different for all DOMs.
+        The rel_dom_times are relative to the sum of local and global
+        time offset.
+    config : dict
+        A dictionary that contains all configuration settings.
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+
+    Returns
+    -------
+    list
+        Values of non-zero data bins.
+    list
+        Bin indices to which the returned values belong to.
+    """
+    bin_values_list = []
+    bin_indices_list = []
+
+    total_time_offset = local_time_offset + global_time_offset
+    bin_values_list.append(total_time_offset)
+    bin_indices_list.append(0)
+
+    hist, bin_edges = np.histogram(rel_dom_times, weights=dom_charges,
+                                   bins=config['time_bins'])
+    for i, charge in enumerate(hist):
+        if charge != 0:
+            bin_values_list.append(charge)
+            bin_indices_list.append(i + 1)
+
+    return bin_values_list, bin_indices_list
+
+
 def charge_bins_and_times(dom_charges, rel_dom_times, global_time_offset,
                           local_time_offset, config, *args, **kwargs):
     """Histogram charge in time bins as given by config['time_bins'] as well as
