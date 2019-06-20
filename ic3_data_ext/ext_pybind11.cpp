@@ -200,7 +200,8 @@ inline py::list get_time_range(const py::array_t<T> charges,
         //  implementation)
         //std::hash<T>{}(variable)
         T min_time = T( int(c_times(0) / 1000) *1000);
-        T max_time = T( int(c_times(num_pulses - 1) / 1000.) *1000.);
+        T max_time = T(int((c_times(num_pulses - 1)
+                            + time_window_size) / 1000.) *1000.);
 
         const int window_bin_size = int(time_window_size / step);
         const int num_bins = int( (max_time - min_time) / step) + 1;
@@ -251,7 +252,10 @@ inline py::list get_time_range(const py::array_t<T> charges,
             T current_start_t = time - time_window_size + step;
             T uncorrelated_time_window =
                 std::min(current_start_t - start_t, time_window_size);
-            T noise = uncorrelated_time_window * noise_rate;
+
+            // Ensure that noise is at least noise for 1ns
+            T noise =
+                std::max(noise_rate, uncorrelated_time_window * noise_rate);
             T sqrt_noise = sqrt(noise);
             T diff = charge_sum - max_charge_sum;
             T rel_diff = diff / sqrt_noise;
