@@ -261,7 +261,7 @@ inline py::list get_time_range(const py::array_t<T> charges,
             T rel_diff = diff / sqrt_noise;
 
             // update new time window
-            if(rel_diff > rel_diff_threshold && diff > charge_threshold){
+            if(rel_diff >= rel_diff_threshold && diff >= charge_threshold){
                 max_charge_sum = charge_sum;
                 start_t = current_start_t;
                 if( start_t < min_time ){
