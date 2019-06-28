@@ -47,6 +47,20 @@ def get_icecube_includes():
     include_dirs = glob.glob(include_pattern)
     include_dirs.append(os.path.join(os.environ['I3_SRC'],
                                      'cmake/tool-patches/common/'))
+
+    # For parasitic metaprojects, the I3_SRC directory will only contain
+    # packages that were added on top of the host metaproject.
+    # In this case we need to scan the source directory of the host as well.
+    # We can obtain the host metaproject by checking the symlinks of the
+    # resources directories in the I3_BUILD directory.
+
+    # Gather source directories
+    resource_pattern = os.path.join(os.environ['I3_BUILD'], '*/resources')
+    resource_dirs = glob.glob(resource_pattern)
+    source_dirs = set([os.readlink(d).replace('resources', 'public')
+                       for d in resource_dirs if os.path.islink(d)])
+    include_dirs.extend(source_dirs)
+
     return include_dirs
 
 
