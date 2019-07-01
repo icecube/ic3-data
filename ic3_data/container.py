@@ -97,7 +97,11 @@ class DNNDataContainer(object):
         self.config['num_bins'] = cfg_data['num_bins']
         self.config['relative_time_method'] = cfg_data['relative_time_method']
         self.config['data_format'] = cfg_data['data_format']
-        self.config['time_bins'] = cfg_data['time_bins']
+        if cfg_data['time_bins'] is None:
+            self.config['time_bins'] = cfg_data['time_bins']
+        else:
+            self.config['time_bins'] = [float(b) for b
+                                        in cfg_data['time_bins']]
         self.config['time_quantiles'] = cfg_data['time_quantiles']
         self.config['autoencoder_settings'] = cfg_data['autoencoder_settings']
         self.config['autoencoder_name'] = cfg_data['autoencoder_name']
