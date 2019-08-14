@@ -86,23 +86,27 @@ class DNNDataContainer(object):
 
         self._is_configured = True
 
-    def load_configuration(self, model_path):
+    def load_configuration(self, model_path,
+                           config_name='config_data_settings.yaml'):
         """Loads data container configuration for a given DNN model.
 
         Parameters
         ----------
         model_path : str
             A path to the model directory.
+        config_name : str, optional
+            The name of the configuration file in the model_path directory.
+            This configuration file contains the data settings.
 
         Raises
         ------
-        NotImplementedError
+        ValueError
             Description
         """
         if self._is_configured:
             raise ValueError('Data container is already configured!')
 
-        config_file = os.path.join(model_path, 'config_data_settings.yaml')
+        config_file = os.path.join(model_path, config_name)
         with open(config_file, 'r') as stream:
             cfg_data = yaml.safe_load(stream)
 
