@@ -87,6 +87,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         class_string = 'ic3_data.data_formats.{}'.format(
                                 self._config['data_format'])
         self._data_format_func = misc.load_class(class_string)
+        self._is_str_dom_format = self._container.config['is_str_dom_format']
 
     def Geometry(self, frame):
         """Get a dictionary with DOM positions
@@ -181,20 +182,24 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             string = om_key.string
             dom = om_key.om
             for value, index in zip(bin_values_list, bin_indices_list):
-                if string > 78:
-                    # deep core
-                    self._container.x_deepcore[self._batch_index,
-                                               string - 78 - 1, dom - 1,
-                                               index] = value
+                if self._is_str_dom_format:
+                    self._container.x_dom[self._batch_index,
+                                          string - 1, dom - 1, index] = value
                 else:
-                    # IC78
-                    a, b = detector.string_hex_coord_dict[string]
-                    # Center of Detector is a,b = 0,0
-                    # a goes from -4 to 5
-                    # b goes from -5 to 4
-                    self._container.x_ic78[self._batch_index,
-                                           a + 4, b + 5, dom - 1,
-                                           index] = value
+                    if string > 78:
+                        # deep core
+                        self._container.x_deepcore[self._batch_index,
+                                                   string - 78 - 1, dom - 1,
+                                                   index] = value
+                    else:
+                        # IC78
+                        a, b = detector.string_hex_coord_dict[string]
+                        # Center of Detector is a,b = 0,0
+                        # a goes from -4 to 5
+                        # b goes from -5 to 4
+                        self._container.x_ic78[self._batch_index,
+                                               a + 4, b + 5, dom - 1,
+                                               index] = value
 
         # measure time
         elapsed_time = timeit.default_timer() - start_time

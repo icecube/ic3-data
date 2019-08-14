@@ -21,7 +21,8 @@ class DNNDataContainer(object):
                   time_bins=None,
                   time_quantiles=None,
                   autoencoder_settings=None,
-                  autoencoder_name=None):
+                  autoencoder_name=None,
+                  is_str_dom_format=False):
         """Summary
 
         Parameters
@@ -57,6 +58,16 @@ class DNNDataContainer(object):
             Settings for autoencoder.
         autoencoder_name : str, optional
             Name of encoder to use: e.g. wf_100, wf_1, ...
+        is_str_dom_format : bool, optional
+            If True, the data format is of shape [batch, 86, 60, num_bins].
+            If False, the data is split up into the icecube part
+            [batch, 10, 10, 60, num_bins] and the deepcore part
+            [batch, 8, 60, num_bins].
+
+        Raises
+        ------
+        ValueError
+            Description
         """
         if self._is_configured:
             raise ValueError('Data container is already configured!')
@@ -71,6 +82,7 @@ class DNNDataContainer(object):
         self.config['time_quantiles'] = time_quantiles
         self.config['autoencoder_settings'] = autoencoder_settings
         self.config['autoencoder_name'] = autoencoder_name
+        self.config['is_str_dom_format'] = is_str_dom_format
 
         self._is_configured = True
 
@@ -106,6 +118,15 @@ class DNNDataContainer(object):
         self.config['autoencoder_settings'] = cfg_data['autoencoder_settings']
         self.config['autoencoder_name'] = cfg_data['autoencoder_name']
 
+        # Backwards compatibility for older exported models which did not
+        # include this setting. In this case the separated format, e.g.
+        # icecube array + deepcore array is used as opposed to the string-dom
+        # format: [batch, 86, 60, num_bins]
+        if 'is_str_dom_format' in cfg_data:
+            self.config['is_str_dom_format'] = cfg_data['is_str_dom_format']
+        else:
+            self.config['is_str_dom_format'] = False
+
         self._is_configured = True
 
     def set_up(self):
@@ -127,10 +148,14 @@ class DNNDataContainer(object):
 
         # data fields that can be used as input into the network during
         # inference.
-        self.x_ic78 = np.zeros([self.batch_size, 10, 10, 60,
-                                self.config['num_bins']])
-        self.x_deepcore = np.zeros([self.batch_size, 8, 60,
+        if self.config['is_str_dom_format']:
+            self.x_dom = np.zeros([self.batch_size, 86, 60,
+                                   self.config['num_bins']])
+        else:
+            self.x_ic78 = np.zeros([self.batch_size, 10, 10, 60,
                                     self.config['num_bins']])
+            self.x_deepcore = np.zeros([self.batch_size, 8, 60,
+                                        self.config['num_bins']])
         self.global_time_offset_batch = np.zeros([self.batch_size])
         self.runtime_batch = np.zeros([self.batch_size])
 
