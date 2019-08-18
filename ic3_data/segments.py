@@ -40,5 +40,4 @@ def CreateDNNData(tray, name,
                    DNNDataContainer=container,
                    PulseKey=PulseKey,
                    CascadeKey=CascadeKey,
-                   OutputKey=OutputKey,
-                   If=lambda f: PulseKey in f)
+                   OutputKey=OutputKey)
