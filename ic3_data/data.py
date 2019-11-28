@@ -28,12 +28,6 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self.AddParameter("DNNDataContainer",
                           "The DNN data container to be used. The container "
                           "will be filled for each Physics frame")
-        self.AddParameter("PulseKey",
-                          "Name of pulse map to use.",
-                          'InIcePulses')
-        self.AddParameter("CascadeKey",
-                          "Frame key for MC cascade",
-                          'MCCascade')
         self.AddParameter("OutputKey",
                           "If provided, the dnn data will be written to the "
                           "frame. In this case the following keys will be "
@@ -44,6 +38,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                           "'OutputKey'+_global_time_offset, "
                           "and optionally 'OutputKey'+_settings, ",
                           None)
+        self.AddParameter("Verbose",
+                          "Print out detailled information.")
 
     def Configure(self):
         """Configure DNN data handler
@@ -54,9 +50,12 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             Description
         """
         self._container = self.GetParameter("DNNDataContainer")
-        self._pulse_key = self.GetParameter("PulseKey")
-        self._cascade_key = self.GetParameter("CascadeKey")
         self._output_key = self.GetParameter("OutputKey")
+        self._verbose = self.GetParameter("Verbose")
+        self._pulse_key = self._container.config['pulse_key']
+        self._cascade_key = self._container.config['cascade_key']
+        self._dom_exclusions = self._container.config['dom_exclusions']
+        self._partial_exclusion = self._container.config['partial_exclusion']
 
         # initalize data fields of data container
         self._container.initialize()
@@ -118,8 +117,15 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             self._container.initialize()
             self._batch_index = 0
 
-        # get pulses
-        pulses = frame[self._pulse_key]
+        # get masked pulses
+        if self._dom_exclusions is not None:
+            ext_boost.get_valid_pulse_map_cpp(frame, self._pulse_key,
+                                              self._dom_exclusions,
+                                              self._partial_exclusion,
+                                              self._verbose)
+            pulses = frame[self._pulse_key + '_masked']
+        else:
+            pulses = frame[self._pulse_key]
 
         if isinstance(pulses, dataclasses.I3RecoPulseSeriesMapMask) or \
            isinstance(pulses, dataclasses.I3RecoPulseSeriesMapUnion):
@@ -219,6 +225,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # increase the batch event index by one
         self._batch_index += 1
+
+        # clean up created masked pulses
+        if self._dom_exclusions is not None:
+            frame.pop(self._pulse_key + '_masked')
 
         self.PushFrame(frame)
 

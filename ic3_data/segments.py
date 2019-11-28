@@ -12,13 +12,17 @@ def CreateDNNData(tray, name,
                   NumDataBins,
                   RelativeTimeMethod,
                   DataFormat,
-                  PulseKey,
+                  PulseKey=None,
+                  DOMExclusions=None,
+                  PartialExclusion=None,
                   TimeBins=None,
                   TimeQuantiles=None,
                   AutoencoderSettings=None,
                   AutoencoderEncoderName=None,
                   CascadeKey='MCCascade',
+                  CheckSettings=True,
                   OutputKey='dnn_data',
+                  Verbose=True,
                   ):
 
     # create DNN data container object
@@ -34,10 +38,13 @@ def CreateDNNData(tray, name,
                         autoencoder_name=AutoencoderEncoderName)
 
     # set up container
-    container.set_up()
+    container.set_up(pulse_key=PulseKey,
+                     dom_exclusions=DOMExclusions,
+                     partial_exclusion=PartialExclusion,
+                     cascade_key=CascadeKey,
+                     check_settings=CheckSettings)
 
     tray.AddModule(DNNContainerHandler, name + '_DNNContainerHandler',
                    DNNDataContainer=container,
-                   PulseKey=PulseKey,
-                   CascadeKey=CascadeKey,
-                   OutputKey=OutputKey)
+                   OutputKey=OutputKey,
+                   Verbose=verbose)

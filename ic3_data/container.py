@@ -1,6 +1,7 @@
 from __future__ import print_function, division
 
 import os
+import logging
 import numpy as np
 import ruamel.yaml as yaml
 from icecube import dataclasses
@@ -22,7 +23,13 @@ class DNNDataContainer(object):
                   time_quantiles=None,
                   autoencoder_settings=None,
                   autoencoder_name=None,
-                  is_str_dom_format=False):
+                  is_str_dom_format=False,
+                  cascade_key=None,
+                  pulse_key=None,
+                  dom_exclusions=None,
+                  partial_exclusion=None,
+                  allowed_pulse_keys=None,
+                  allowed_cascade_keys=None):
         """Summary
 
         Parameters
@@ -63,6 +70,29 @@ class DNNDataContainer(object):
             If False, the data is split up into the icecube part
             [batch, 10, 10, 60, num_bins] and the deepcore part
             [batch, 8, 60, num_bins].
+        cascade_key : str, optional
+            This parameter can be set to define the default cascade_key.
+            The particle to use if the relative time method is 'vertex' or
+            'first_light_at_dom'.
+        pulse_key : str, optional
+            This parameter can be set to define the default value.
+            Name of pulses to use.
+        dom_exclusions : list of str, optional
+            This parameter can be set to define the default value.
+            List of frame keys that define DOMs or TimeWindows that should be
+            excluded. Typical values for this are:
+            ['BrightDOMs','SaturationWindows',
+             'BadDomsList', 'CalibrationErrata']
+        partial_exclusion : bool, optional
+            This parameter can be set to define the default value.
+            If True, partially exclude DOMS, e.g. only omit pulses from
+            excluded TimeWindows defined in 'dom_exclusions'.
+            If False, all pulses from a DOM will be excluded if the omkey
+            exists in the dom_exclusions.
+        allowed_pulse_keys : None, optional
+            This parameter can be set to define the default pulse_keys.
+        allowed_cascade_keys : None, optional
+            This parameter can be set to define the default cascade_keys.
 
         Raises
         ------
@@ -83,6 +113,12 @@ class DNNDataContainer(object):
         self.config['autoencoder_settings'] = autoencoder_settings
         self.config['autoencoder_name'] = autoencoder_name
         self.config['is_str_dom_format'] = is_str_dom_format
+        self.config['cascade_key'] = cascade_key
+        self.config['pulse_key'] = pulse_key
+        self.config['dom_exclusions'] = dom_exclusions
+        self.config['partial_exclusion'] = partial_exclusion
+        self.config['allowed_pulse_keys'] = allowed_pulse_keys
+        self.config['allowed_cascade_keys'] = allowed_cascade_keys
 
         self._is_configured = True
 
@@ -131,15 +167,116 @@ class DNNDataContainer(object):
         else:
             self.config['is_str_dom_format'] = False
 
+        for key in ['cascade_key', 'pulse_key', 'dom_exclusions',
+                    'partial_exclusion', 'allowed_pulse_keys',
+                    'allowed_cascade_keys']:
+            if key in cfg_data:
+                self.config[key] = cfg_data[key]
+            else:
+                self.config[key] = None
+
         self._is_configured = True
 
-    def set_up(self):
+    def set_up(self, pulse_key=None, dom_exclusions=None,
+               partial_exclusion=True, cascade_key=None,
+               check_settings=True):
+        """Set up the container.
 
+        Parameters
+        ----------
+        pulse_key : str, optional
+            Name of pulses to use.
+        dom_exclusions : list of str, optional
+            List of frame keys that define DOMs or TimeWindows that should be
+            excluded. Typical values for this are:
+            ['BrightDOMs','SaturationWindows',
+             'BadDomsList', 'CalibrationErrata']
+        partial_exclusion : bool, optional
+            If True, partially exclude DOMS, e.g. only omit pulses from
+            excluded TimeWindows defined in 'dom_exclusions'.
+            If False, all pulses from a DOM will be excluded if the omkey
+            exists in the dom_exclusions.
+        cascade_key : str, optional
+            The particle to use if the relative time method is 'vertex' or
+            'first_light_at_dom'.
+        check_settings : bool, optional
+            If True, the set values will be checked against configured or
+            loaded settings if they were set. It these settings do not match
+            an error will be raised. This ensures the correct use of the
+            trained models.
+            Sometimes it is necessary to use the model with slightly different
+            settings. In this case 'check_settings' can be set to False.
+            However, when doing so it can't be guaranteed that the model is
+            used in a correct way.
+            TLTR: use 'False' with caution.
+
+        Raises
+        ------
+        ValueError
+            If the pulse settings are checked and a mismatch is found.
+        """
         if not self._is_configured:
             raise ValueError('Config for data container is not set up yet!')
 
         if self._is_ready:
             raise ValueError('Data container is already set up!')
+
+        # go through settings and configure them if there is no mismatch
+        params = {'pulse_key': pulse_key, 'dom_exclusions': dom_exclusions,
+                  'partial_exclusion': partial_exclusion,
+                  'cascade_key': cascade_key, 'check_settings': check_settings}
+        for param in params:
+
+            # if the value is not being skipped we can skip the rest
+            if params[param] is None:
+                continue
+
+            # if it has not been configured yet, we can simply set the value
+            if self.config[param] is None:
+                self.config[param] = params[param]
+
+            # The setting is already configured, now we need to check if
+            # there is a mismatch
+            else:
+                if self.config[param] != params[param]:
+
+                    # check for allowed pulse keys
+                    if (param == 'pulse_key' and
+                            self.config['allowed_pulse_keys'] is not None
+                            and params[param]
+                            in self.config['allowed_pulse_keys']):
+
+                        # this is an allowed pulse, so set it
+                        self.config[param] = params[param]
+                        continue
+
+                    # check for allowed cascade keys
+                    if (param == 'cascade_key' and
+                            self.config['allowed_cascade_keys'] is not None
+                            and params[param]
+                            in self.config['allowed_cascade_keys']):
+
+                        # this is an allowed cascade key, so set it
+                        self.config[param] = params[param]
+                        continue
+
+                    if check_settings:
+                        msg = 'Fatal: parameter {!r} is set to {!r} which '
+                        msg += 'differs from the model default value {!r}.'
+                        raise ValueError(msg.format(
+                            param, self.config[param], params[param]))
+                    else:
+                        msg = 'Warning: parameter {!r} is set to {!r} which '
+                        msg += 'differs from the model default value {!r}. '
+                        msg += 'Make sure this is what you intend to do!'
+                        logging.warning(msg.format(
+                            param, self.config[param], params[param]))
+                        self.config[param] = params[param]
+
+        # check if required variables are set [cascade_key isn't always needed]
+        for param in ['pulse_key', 'dom_exclusions', 'partial_exclusion']:
+            if self.config[param] is None:
+                raise ValueError('Parameter {} must be set!'.format(param))
 
         # create data fields
         self.initialize()
