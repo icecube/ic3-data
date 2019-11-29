@@ -18,14 +18,13 @@ class DNNDataContainer(object):
         self._is_configured = False
         self._is_ready = False
 
-    def configure(self, num_bins, relative_time_method, data_format,
+    def configure(self, num_bins, relative_time_method, data_format, pulse_key,
                   time_bins=None,
                   time_quantiles=None,
                   autoencoder_settings=None,
                   autoencoder_name=None,
                   is_str_dom_format=False,
                   cascade_key=None,
-                  pulse_key=None,
                   dom_exclusions=None,
                   partial_exclusion=None,
                   allowed_pulse_keys=None,
@@ -53,6 +52,9 @@ class DNNDataContainer(object):
                     The binning is defined with the bins parameter.
                 autoencoder:
                     Use an autoencoder to encode pulses.
+        pulse_key : str, optional
+            This parameter can be set to define the default value.
+            Name of pulses to use.
         time_bins : List of float, optional
             A list defining the time bin edges if data_format is 'charge_bins'
             or 'autoencoder'.
@@ -74,9 +76,6 @@ class DNNDataContainer(object):
             This parameter can be set to define the default cascade_key.
             The particle to use if the relative time method is 'vertex' or
             'first_light_at_dom'.
-        pulse_key : str, optional
-            This parameter can be set to define the default value.
-            Name of pulses to use.
         dom_exclusions : list of str, optional
             This parameter can be set to define the default value.
             List of frame keys that define DOMs or TimeWindows that should be
@@ -167,53 +166,58 @@ class DNNDataContainer(object):
         else:
             self.config['is_str_dom_format'] = False
 
+        # Backwards compatibility for older exported models which did not
+        # include this settings.
         for key in ['cascade_key', 'pulse_key', 'dom_exclusions',
                     'partial_exclusion', 'allowed_pulse_keys',
                     'allowed_cascade_keys']:
             if key in cfg_data:
                 self.config[key] = cfg_data[key]
-            else:
-                self.config[key] = None
 
         self._is_configured = True
 
-    def set_up(self, pulse_key=None, dom_exclusions=None,
-               partial_exclusion=True, cascade_key=None,
-               check_settings=True):
+    def set_up(self, ignore_misconfigured_settings_list=None, **params):
         """Set up the container.
 
         Parameters
         ----------
+        ignore_misconfigured_settings_list : list of st, optional
+            The container automatically checks whether the configured settings
+            match those which were already configured. If a
+            mismatch is found, an error will be raised. This helps to ensure
+            the correct use of the neural network models. Sometimes it is
+            necessary to use the container with slightly different settings.
+            In this case a list of setting names can be passed for which the
+            mismatches will be ignored. Doing so will relax the raised error
+            to a warning that is issued.
+            This should be used with caution.
         pulse_key : str, optional
+            This will set/override the setting of the configured container.
             Name of pulses to use.
         dom_exclusions : list of str, optional
+            This will set/override the setting of the configured container.
             List of frame keys that define DOMs or TimeWindows that should be
             excluded. Typical values for this are:
             ['BrightDOMs','SaturationWindows',
              'BadDomsList', 'CalibrationErrata']
         partial_exclusion : bool, optional
+            This will set/override the setting of the configured container.
             If True, partially exclude DOMS, e.g. only omit pulses from
             excluded TimeWindows defined in 'dom_exclusions'.
             If False, all pulses from a DOM will be excluded if the omkey
             exists in the dom_exclusions.
         cascade_key : str, optional
+            This will set/override the setting of the configured container.
             The particle to use if the relative time method is 'vertex' or
             'first_light_at_dom'.
-        check_settings : bool, optional
-            If True, the set values will be checked against configured or
-            loaded settings if they were set. It these settings do not match
-            an error will be raised. This ensures the correct use of the
-            trained models.
-            Sometimes it is necessary to use the model with slightly different
-            settings. In this case 'check_settings' can be set to False.
-            However, when doing so it can't be guaranteed that the model is
-            used in a correct way.
-            TLTR: use 'False' with caution.
+        params : dict, optional
+            Settings to set and/or override for the DNNContainer.
 
         Raises
         ------
         ValueError
-            If the pulse settings are checked and a mismatch is found.
+            If the settings are checked and a mismatch is found.
+            If the container is not configured or if it is already ready.
         """
         if not self._is_configured:
             raise ValueError('Config for data container is not set up yet!')
@@ -222,17 +226,10 @@ class DNNDataContainer(object):
             raise ValueError('Data container is already set up!')
 
         # go through settings and configure them if there is no mismatch
-        params = {'pulse_key': pulse_key, 'dom_exclusions': dom_exclusions,
-                  'partial_exclusion': partial_exclusion,
-                  'cascade_key': cascade_key, 'check_settings': check_settings}
         for param in params:
 
-            # if the value is not being skipped we can skip the rest
-            if params[param] is None:
-                continue
-
             # if it has not been configured yet, we can simply set the value
-            if self.config[param] is None:
+            if param not in self.config:
                 self.config[param] = params[param]
 
             # The setting is already configured, now we need to check if
@@ -242,6 +239,7 @@ class DNNDataContainer(object):
 
                     # check for allowed pulse keys
                     if (param == 'pulse_key' and
+                            'allowed_pulse_keys' in self.config and
                             self.config['allowed_pulse_keys'] is not None
                             and params[param]
                             in self.config['allowed_pulse_keys']):
@@ -252,6 +250,7 @@ class DNNDataContainer(object):
 
                     # check for allowed cascade keys
                     if (param == 'cascade_key' and
+                            'allowed_cascade_keys' in self.config and
                             self.config['allowed_cascade_keys'] is not None
                             and params[param]
                             in self.config['allowed_cascade_keys']):
@@ -260,22 +259,28 @@ class DNNDataContainer(object):
                         self.config[param] = params[param]
                         continue
 
-                    if check_settings:
-                        msg = 'Fatal: parameter {!r} is set to {!r} which '
-                        msg += 'differs from the model default value {!r}.'
-                        raise ValueError(msg.format(
-                            param, self.config[param], params[param]))
-                    else:
+                    if param in ignore_misconfigured_settings_list:
                         msg = 'Warning: parameter {!r} is set to {!r} which '
-                        msg += 'differs from the model default value {!r}. '
+                        msg += 'differs from the configured value {!r}. This '
+                        msg += 'mismatch will be ingored since the parameter '
+                        msg += 'is in the ignore_misconfigured_settings_list. '
                         msg += 'Make sure this is what you intend to do!'
                         logging.warning(msg.format(
-                            param, self.config[param], params[param]))
+                            param, params[param], self.config[param]))
                         self.config[param] = params[param]
+                    else:
+                        msg = 'Fatal: parameter {!r} is set to {!r} which '
+                        msg += 'differs from the model default value {!r}. If '
+                        msg += 'you are sure you want to use this model with '
+                        msg += 'this setting, then you can add the parameter '
+                        msg += 'to the ignore_misconfigured_settings_list.'
+                        raise ValueError(msg.format(
+                            param, params[param], self.config[param]))
 
         # check if required variables are set [cascade_key isn't always needed]
-        for param in ['pulse_key', 'dom_exclusions', 'partial_exclusion']:
-            if self.config[param] is None:
+        for param in ['cascade_key', 'pulse_key', 'dom_exclusions',
+                      'partial_exclusion']:
+            if param not in self.config:
                 raise ValueError('Parameter {} must be set!'.format(param))
 
         # create data fields
