@@ -116,12 +116,12 @@ inline boost::python::tuple restructure_pulses(
                 charges_numpy, times_numpy, dom_times_dict, dom_charges_dict );
 }
 
-I3RecoPulseSeriesMap& get_valid_pulse_map(
-                        boost::python::object& frame_obj,
-                        const boost::python::object& pulse_key_obj,
-                        const boost::python::list& excluded_doms_obj,
-                        const boost::python::object& partial_exclusion_obj,
-                        const boost::python::object& verbose_obj){
+I3RecoPulseSeriesMapPtr get_valid_pulse_map(
+                            boost::python::object& frame_obj,
+                            const boost::python::object& pulse_key_obj,
+                            const boost::python::list& excluded_doms_obj,
+                            const boost::python::object& partial_exclusion_obj,
+                            const boost::python::object& verbose_obj){
     /*
     This method creates a new pulse series based on the given pulse series
     name, but excludes pulses and DOMs as specified with the excluded_doms
@@ -258,10 +258,10 @@ I3RecoPulseSeriesMap& get_valid_pulse_map(
     }
     // ------------------------------------------------
 
-/*    // write pulses to frame
+    // write pulses to frame
     I3RecoPulseSeriesMapPtr fr_pulses =
         boost::make_shared<I3RecoPulseSeriesMap>(pulses_masked);
-    frame.Put(pulse_key + "_masked", fr_pulses);*/
+    //frame.Put(pulse_key + "_masked", fr_pulses);
 
     if (verbose){
         /*log_info(
@@ -272,7 +272,7 @@ I3RecoPulseSeriesMap& get_valid_pulse_map(
                   << pulse_key << std::endl;
     }
 
-    return pulses_masked;
+    return fr_pulses;
 }
 
 
