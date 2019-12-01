@@ -228,7 +228,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # clean up created masked pulses
         if self._dom_exclusions is not None:
-            del frame[self._pulse_key + '_masked']
+            frame.Delete(self._pulse_key + '_masked')
 
         self.PushFrame(frame)
 
