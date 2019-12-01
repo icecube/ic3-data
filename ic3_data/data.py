@@ -119,10 +119,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # get masked pulses
         if self._dom_exclusions is not None:
-            ext_boost.get_valid_pulse_map_cpp(frame, self._pulse_key,
-                                              self._dom_exclusions,
-                                              self._partial_exclusion,
-                                              self._verbose)
+            ext_boost.get_valid_pulse_map(frame, self._pulse_key,
+                                          self._dom_exclusions,
+                                          self._partial_exclusion,
+                                          self._verbose)
             pulses = frame[self._pulse_key + '_masked']
         else:
             pulses = frame[self._pulse_key]
@@ -228,7 +228,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # clean up created masked pulses
         if self._dom_exclusions is not None:
-            frame.pop(self._pulse_key + '_masked')
+            del frame[self._pulse_key + '_masked']
 
         self.PushFrame(frame)
 

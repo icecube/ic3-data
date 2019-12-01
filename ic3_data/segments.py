@@ -47,4 +47,4 @@ def CreateDNNData(tray, name,
     tray.AddModule(DNNContainerHandler, name + '_DNNContainerHandler',
                    DNNDataContainer=container,
                    OutputKey=OutputKey,
-                   Verbose=verbose)
+                   Verbose=Verbose)
