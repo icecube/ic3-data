@@ -259,7 +259,8 @@ class DNNDataContainer(object):
                         self.config[param] = params[param]
                         continue
 
-                    if param in ignore_misconfigured_settings_list:
+                    if (ignore_misconfigured_settings_list is not None
+                            and param in ignore_misconfigured_settings_list):
                         msg = 'Warning: parameter {!r} is set to {!r} which '
                         msg += 'differs from the configured value {!r}. This '
                         msg += 'mismatch will be ingored since the parameter '
