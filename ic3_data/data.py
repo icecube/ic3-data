@@ -83,8 +83,18 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             self._config['autoencoder'] = autoencoder.get_autoencoder(
                                         self._config['autoencoder_settings'])
 
-        class_string = 'ic3_data.data_formats.{}'.format(
-                                self._config['data_format'])
+        # Check if it is a data format that computes everything at once,
+        # or if it is one that computes the values for one DOM at a time
+        if self._config['data_format'] in [
+                'cascade_classification_data',
+                ]:
+            self._calculate_per_dom = False
+            class_string = 'ic3_data.data_formats_detector.{}'.format(
+                                    self._config['data_format'])
+        else:
+            self._calculate_per_dom = True
+            class_string = 'ic3_data.data_formats.{}'.format(
+                                    self._config['data_format'])
         self._data_format_func = misc.load_class(class_string)
         self._is_str_dom_format = self._container.config['is_str_dom_format']
 
@@ -130,45 +140,49 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
            isinstance(pulses, dataclasses.I3RecoPulseSeriesMapUnion):
             pulses = pulses.apply(frame)
 
-        # restructure pulses
-        # charges, times, dom_times_dict, dom_charges_dict = \
-        #     self.restructure_pulses(pulses)
-        charges, times, dom_times_dict, dom_charges_dict = \
-            ext_boost.restructure_pulses(pulses)
+        # ------------------------------------------------
+        # Calculate DNN input data seperately for each DOM
+        # ------------------------------------------------
+        if self._calculate_per_dom:
+            # restructure pulses
+            # charges, times, dom_times_dict, dom_charges_dict = \
+            #     self.restructure_pulses(pulses)
+            charges, times, dom_times_dict, dom_charges_dict = \
+                ext_boost.restructure_pulses(pulses)
 
-        # get global time offset
-        global_time_offset = self.get_global_time_offset(frame=frame,
-                                                         charges=charges,
-                                                         times=times)
-        self._container.global_time_offset.value = global_time_offset
-        self._container.global_time_offset_batch[self._batch_index] = \
-            global_time_offset
+            # get global time offset
+            global_time_offset = self.get_global_time_offset(frame=frame,
+                                                             charges=charges,
+                                                             times=times)
+            self._container.global_time_offset.value = global_time_offset
+            self._container.global_time_offset_batch[self._batch_index] = \
+                global_time_offset
 
-        # loop through hit DOMs
-        for om_key, dom_pulses in pulses:
+            # loop through hit DOMs
+            for om_key, dom_pulses in pulses:
 
-            dom_charges = dom_charges_dict[om_key]
+                dom_charges = dom_charges_dict[om_key]
 
-            # abort early if no pulses exist for DOM key
-            if dom_charges.size == 0:
-                continue
+                # abort early if no pulses exist for DOM key
+                if dom_charges.size == 0:
+                    continue
 
-            # calculate times relative to global time offset
-            rel_dom_times = dom_times_dict[om_key] - global_time_offset
+                # calculate times relative to global time offset
+                rel_dom_times = dom_times_dict[om_key] - global_time_offset
 
-            # get local time offset for the DOM
-            local_time_offset = self.get_local_time_offset(
+                # get local time offset for the DOM
+                local_time_offset = self.get_local_time_offset(
                                                     frame=frame,
                                                     om_key=om_key,
                                                     dom_times=rel_dom_times,
                                                     dom_charges=dom_charges)
 
-            # Calculate times relative to local offset
-            rel_dom_times -= local_time_offset
-            # total_time_offset = global_time_offset + local_time_offset
+                # Calculate times relative to local offset
+                rel_dom_times -= local_time_offset
+                # total_time_offset = global_time_offset + local_time_offset
 
-            # get DNN input data for this DOM
-            bin_values_list, bin_indices_list = self._data_format_func(
+                # get DNN input data for this DOM
+                bin_values_list, bin_indices_list = self._data_format_func(
                                         dom_charges=dom_charges,
                                         rel_dom_times=rel_dom_times,
                                         global_time_offset=global_time_offset,
@@ -176,35 +190,37 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                                         config=self._config,
                                         )
 
-            # abort if no data is to be saved for this DOM
-            if bin_values_list is None:
-                continue
+                # abort if no data is to be saved for this DOM
+                if bin_values_list is None:
+                    continue
 
-            # Fill DNNDataContainer
-            self._container.bin_values[om_key] = bin_values_list
-            self._container.bin_indices[om_key] = bin_indices_list
+                # Fill DNNDataContainer
+                self._fill_dnn_container(
+                    om_key, bin_values_list, bin_indices_list)
 
-            string = om_key.string
-            dom = om_key.om
-            for value, index in zip(bin_values_list, bin_indices_list):
-                if self._is_str_dom_format:
-                    self._container.x_dom[self._batch_index,
-                                          string - 1, dom - 1, index] = value
-                else:
-                    if string > 78:
-                        # deep core
-                        self._container.x_deepcore[self._batch_index,
-                                                   string - 78 - 1, dom - 1,
-                                                   index] = value
-                    else:
-                        # IC78
-                        a, b = detector.string_hex_coord_dict[string]
-                        # Center of Detector is a,b = 0,0
-                        # a goes from -4 to 5
-                        # b goes from -5 to 4
-                        self._container.x_ic78[self._batch_index,
-                                               a + 4, b + 5, dom - 1,
-                                               index] = value
+        # ---------------------------------------------------
+        # Calculate DNN input data for whole detector at once
+        # ---------------------------------------------------
+        else:
+
+            global_time_offset, data_dict = self._data_format_func(
+                                                        frame=frame,
+                                                        pulses=pulses,
+                                                        config=self._config)
+
+            # loop through data
+            for om_key, (bin_values_list, bin_indices_list) in \
+                    data_dict.items():
+
+                # Fill DNNDataContainer
+                self._fill_dnn_container(
+                    om_key, bin_values_list, bin_indices_list)
+
+            # set global_time offset
+            self._container.global_time_offset.value = global_time_offset
+            self._container.global_time_offset_batch[self._batch_index] = \
+                global_time_offset
+        # ---------------------------------------------------
 
         # measure time
         elapsed_time = timeit.default_timer() - start_time
@@ -226,6 +242,43 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._batch_index += 1
 
         self.PushFrame(frame)
+
+    def _fill_dnn_container(self, om_key, bin_values_list, bin_indices_list):
+        """Fill in container data for a specific DOM
+
+        Parameters
+        ----------
+        om_key : I3OMKey
+            The key of the DOM for which to fill in the data.
+        bin_values_list : list of float
+            The values of the bins.
+        bin_indices_list : list of int
+            The bin indices.
+        """
+        self._container.bin_values[om_key] = bin_values_list
+        self._container.bin_indices[om_key] = bin_indices_list
+
+        string = om_key.string
+        dom = om_key.om
+        for value, index in zip(bin_values_list, bin_indices_list):
+            if self._is_str_dom_format:
+                self._container.x_dom[self._batch_index,
+                                      string - 1, dom - 1, index] = value
+            else:
+                if string > 78:
+                    # deep core
+                    self._container.x_deepcore[self._batch_index,
+                                               string - 78 - 1, dom - 1,
+                                               index] = value
+                else:
+                    # IC78
+                    a, b = detector.string_hex_coord_dict[string]
+                    # Center of Detector is a,b = 0,0
+                    # a goes from -4 to 5
+                    # b goes from -5 to 4
+                    self._container.x_ic78[self._batch_index,
+                                           a + 4, b + 5, dom - 1,
+                                           index] = value
 
     def restructure_pulses(self, pulses):
         """Restructure pulse series information
