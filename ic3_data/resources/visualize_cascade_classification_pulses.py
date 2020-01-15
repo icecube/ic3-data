@@ -27,9 +27,16 @@ class CascasdePulseVisualizer(icetray.I3ConditionalModule):
                           'L3_MonopodFit4')
         self.AddParameter("TimeQuantiles",
                           "Time quantiles as a list of tuples of (rel, abs).",
-                          [(-1, -2000), (-1, -1000), (-1, 0),
-                           (-0.5, 0), (0, 0), (1, 0), (1.35634, 0),
-                           (1.35634, 100), (1.35634, 500), (1.35634, 5000)]
+                          # [(-1, -2000), (-1, -1000), (-1, 0),
+                          #  (-0.5, 0), (0, 0), (1, 0), (1.35634, 0),
+                          #  (1.35634, 100), (1.35634, 500), (1.35634, 5000)]
+                          # [(-1, -1000), (-1, 0),
+                          #  (-0.5, 0), (0, 0), (0.5, 0), (1, 0), (1.35634, 0),
+                          #  (1.5, 0), (2.0, 0), (3.0, 0), (3.0, + 2000)]
+                          [(-1, -1000), (-1, 0),
+                           (-0.5, 0), (0, 0), (0.25, 0), (0.50, 0), (0.75, 0),
+                           (1, 0), (1.35634, 0), (1.7, 0), (2.0, 0), (3.0, 0),
+                           (3.0, + 2000)]
                           )
         self.AddParameter("ProbabilityThreshold",
                           "Threshold under which to discard pulses",
@@ -89,10 +96,10 @@ class CascasdePulseVisualizer(icetray.I3ConditionalModule):
             y = cascade_obj.pos.y
             z = cascade_obj.pos.z
             t = cascade_obj.time
-            unc_x = 30.
-            unc_y = 30.
-            unc_z = 30.
-            unc_t = 100.
+            unc_x = 10.
+            unc_y = 10.
+            unc_z = 10.
+            unc_t = 50.
         else:
             x = cascade_obj['VertexX']
             y = cascade_obj['VertexY']
@@ -102,22 +109,22 @@ class CascasdePulseVisualizer(icetray.I3ConditionalModule):
             if 'VertexX_unc' in cascade_obj:
                 unc_x = cascade_obj['VertexX_unc']
             else:
-                unc_x = 30.
+                unc_x = 10.
 
             if 'VertexY_unc' in cascade_obj:
                 unc_y = cascade_obj['VertexY_unc']
             else:
-                unc_y = 30.
+                unc_y = 10.
 
             if 'VertexZ_unc' in cascade_obj:
                 unc_z = cascade_obj['VertexZ_unc']
             else:
-                unc_z = 30.
+                unc_z = 10.
 
             if 'VertexTime_unc' in cascade_obj:
                 unc_t = cascade_obj['VertexTime_unc']
             else:
-                unc_t = 30.
+                unc_t = 50.
 
         c = dataclasses.I3Constants.c
         c_ice = dataclasses.I3Constants.c_ice

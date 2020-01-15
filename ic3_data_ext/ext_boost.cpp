@@ -249,22 +249,23 @@ inline boost::python::dict get_cascade_classification_data(
         }
 
         // compress output: throw out extremely small values
-        std::vector<int> bin_indices_list;
-        std::vector<double> bin_values_list_compressed;
+        boost::python::list bin_indices_list;
+        boost::python::list bin_values_list_compressed;
         std::vector<double>::iterator values_iterator =
                 bin_values_list.begin();
+        bool found_at_least_one_element = false;
         for (unsigned int i=0; i < n_total; i++){
             if (*values_iterator > 1e-7){
-                bin_values_list_compressed.push_back(*values_iterator);
-                bin_indices_list.push_back(i);
+                bin_values_list_compressed.append(*values_iterator);
+                bin_indices_list.append(i);
+                found_at_least_one_element = true;
             }
             values_iterator += 1;
         }
 
-        if (bin_values_list_compressed.size() > 0){
+        if (found_at_least_one_element){
             data_dict[dom_pulses.first] = boost::python::make_tuple(
-                    stdVecToNumpyArray<double>(bin_values_list_compressed),
-                    stdVecToNumpyArray<int>(bin_indices_list));
+                    bin_values_list_compressed, bin_indices_list);
         }
     }
 
