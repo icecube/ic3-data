@@ -181,6 +181,11 @@ inline boost::python::dict get_cascade_classification_data(
 
     for (auto const& dom_pulses : pulse_map){
 
+        // check if pulses are present
+        if (dom_pulses.second.size() == 0){
+            continue;
+        }
+
         const I3Position& pos = omgeo.at(dom_pulses.first).position;
 
         // distance to DOM
@@ -241,7 +246,7 @@ inline boost::python::dict get_cascade_classification_data(
 
         }
 
-        unsigned int n_total =  n_bins;
+        unsigned int n_total = n_bins;
         if (add_dom_info){
             n_total += 2;
             bin_values_list.push_back(distance);
