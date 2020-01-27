@@ -111,9 +111,12 @@ def charge_bins(dom_charges, rel_dom_times, global_time_offset,
             bin_values_list.append(charge)
             bin_indices_list.append(i)
 
-    bin_exclusions_list = get_time_bin_exclusions(
-        frame, om_key, config['time_bins'], dom_exclusions, partial_exclusion,
-        global_time_offset + local_time_offset)
+    if dom_exclusions is None:
+        bin_exclusions_list = []
+    else:
+        bin_exclusions_list = get_time_bin_exclusions(
+            frame, om_key, config['time_bins'], dom_exclusions,
+            partial_exclusion, global_time_offset + local_time_offset)
 
     return bin_values_list, bin_indices_list, bin_exclusions_list
 
@@ -182,15 +185,19 @@ def charge_bins_and_dom_time_offset(dom_charges, rel_dom_times,
             bin_values_list.append(charge)
             bin_indices_list.append(i + 1)
 
-    bin_exclusions_list = get_time_bin_exclusions(
-        frame, om_key, config['time_bins'], dom_exclusions, partial_exclusion,
-        global_time_offset + local_time_offset)
-    bin_exclusions_list_shifted = []
-    for i in bin_exclusions_list:
-        if i == -1:
-            bin_exclusions_list_shifted.append(i)
-        else:
-            bin_exclusions_list_shifted.append(i + 1)
+    if dom_exclusions is None:
+        bin_exclusions_list_shifted = []
+    else:
+        bin_exclusions_list = get_time_bin_exclusions(
+            frame, om_key, config['time_bins'], dom_exclusions,
+            partial_exclusion, global_time_offset + local_time_offset)
+
+        bin_exclusions_list_shifted = []
+        for i in bin_exclusions_list:
+            if i == -1:
+                bin_exclusions_list_shifted.append(i)
+            else:
+                bin_exclusions_list_shifted.append(i + 1)
 
     return bin_values_list, bin_indices_list, bin_exclusions_list_shifted
 
@@ -260,15 +267,19 @@ def charge_bins_and_times(dom_charges, rel_dom_times, global_time_offset,
             bin_values_list.append(charge)
             bin_indices_list.append(i + 2)
 
-    bin_exclusions_list = get_time_bin_exclusions(
-        frame, om_key, config['time_bins'], dom_exclusions, partial_exclusion,
-        global_time_offset + local_time_offset)
-    bin_exclusions_list_shifted = []
-    for i in bin_exclusions_list:
-        if i == -1:
-            bin_exclusions_list_shifted.append(i)
-        else:
-            bin_exclusions_list_shifted.append(i + 2)
+    if dom_exclusions is None:
+        bin_exclusions_list_shifted = []
+    else:
+        bin_exclusions_list = get_time_bin_exclusions(
+            frame, om_key, config['time_bins'], dom_exclusions,
+            partial_exclusion, global_time_offset + local_time_offset)
+
+        bin_exclusions_list_shifted = []
+        for i in bin_exclusions_list:
+            if i == -1:
+                bin_exclusions_list_shifted.append(i)
+            else:
+                bin_exclusions_list_shifted.append(i + 2)
 
     return bin_values_list, bin_indices_list, bin_exclusions_list_shifted
 
