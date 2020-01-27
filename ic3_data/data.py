@@ -182,21 +182,25 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                 # total_time_offset = global_time_offset + local_time_offset
 
                 # get DNN input data for this DOM
-                bin_values_list, bin_indices_list = self._data_format_func(
-                                        dom_charges=dom_charges,
-                                        rel_dom_times=rel_dom_times,
-                                        global_time_offset=global_time_offset,
-                                        local_time_offset=local_time_offset,
-                                        config=self._config,
-                                        )
+                bin_values_list, bin_indices_list, bin_exclusions_list = \
+                    self._data_format_func(
+                                    dom_charges=dom_charges,
+                                    rel_dom_times=rel_dom_times,
+                                    global_time_offset=global_time_offset,
+                                    local_time_offset=local_time_offset,
+                                    config=self._config,
+                                    dom_exclusions=self._dom_exclusions,
+                                    partial_exclusion=self._partial_exclusion,
+                                    frame=frame, om_key=om_key,
+                                    )
 
                 # abort if no data is to be saved for this DOM
                 if bin_values_list is None:
                     continue
 
                 # Fill DNNDataContainer
-                self._fill_dnn_container(
-                    om_key, bin_values_list, bin_indices_list)
+                self._fill_dnn_container(om_key, bin_values_list,
+                                         bin_indices_list, bin_exclusions_list)
 
         # ---------------------------------------------------
         # Calculate DNN input data for whole detector at once
@@ -204,17 +208,20 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         else:
 
             global_time_offset, data_dict = self._data_format_func(
-                                                        frame=frame,
-                                                        pulses=pulses,
-                                                        config=self._config)
+                                    frame=frame,
+                                    pulses=pulses,
+                                    config=self._config,
+                                    dom_exclusions=self._dom_exclusions,
+                                    partial_exclusion=self._partial_exclusion)
 
             # loop through data
-            for om_key, (bin_values_list, bin_indices_list) in \
-                    data_dict.items():
+            for om_key, (bin_values_list,
+                         bin_indices_list,
+                         bin_exclusions_list) in data_dict.items():
 
                 # Fill DNNDataContainer
-                self._fill_dnn_container(
-                    om_key, bin_values_list, bin_indices_list)
+                self._fill_dnn_container(om_key, bin_values_list,
+                                         bin_indices_list, bin_exclusions_list)
 
             # set global_time offset
             self._container.global_time_offset.value = global_time_offset
@@ -229,6 +236,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # Write data to frame
         if self._output_key is not None:
+            frame[self._output_key + '_bin_exclusions'] = \
+                self._container.bin_exclusions
             frame[self._output_key + '_bin_indices'] = \
                 self._container.bin_indices
             frame[self._output_key + '_bin_values'] = \
@@ -243,7 +252,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         self.PushFrame(frame)
 
-    def _fill_dnn_container(self, om_key, bin_values_list, bin_indices_list):
+    def _fill_dnn_container(self, om_key, bin_values_list, bin_indices_list,
+                            bin_exclusions_list):
         """Fill in container data for a specific DOM
 
         Parameters
@@ -254,9 +264,12 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             The values of the bins.
         bin_indices_list : list of int
             The bin indices.
+        bin_exclusions_list : list of int
+            The list of bin indices which define bins that will be excluded.
         """
         self._container.bin_values[om_key] = bin_values_list
         self._container.bin_indices[om_key] = bin_indices_list
+        self._container.bin_exclusions[om_key] = bin_exclusions_list
 
         string = om_key.string
         dom = om_key.om
@@ -279,6 +292,43 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                     self._container.x_ic78[self._batch_index,
                                            a + 4, b + 5, dom - 1,
                                            index] = value
+
+        for index in bin_exclusions_list:
+            if self._is_str_dom_format:
+                if index == -1:
+                    # exclude complete DOM
+                    self._container.x_dom_exclusions[
+                        self._batch_index, string - 1, dom - 1, :] = False
+                else:
+                    self._container.x_dom_exclusions[
+                        self._batch_index, string - 1, dom - 1, index] = False
+            else:
+                if string > 78:
+                    # deep core
+                    if index == -1:
+                        # exclude complete DOM
+                        self._container.x_deepcore_exclusions[
+                            self._batch_index, string - 78 - 1,
+                            dom - 1, :] = False
+                    else:
+                        self._container.x_deepcore_exclusions[
+                            self._batch_index, string - 78 - 1,
+                            dom - 1, index] = False
+                else:
+                    # IC78
+                    a, b = detector.string_hex_coord_dict[string]
+                    # Center of Detector is a,b = 0,0
+                    # a goes from -4 to 5
+                    # b goes from -5 to 4
+                    if index == -1:
+                        # exclude complete DOM
+                        self._container.x_ic78_exclusions[
+                            self._batch_index,
+                            a + 4, b + 5, dom - 1, :] = False
+                    else:
+                        self._container.x_ic78_exclusions[
+                            self._batch_index,
+                            a + 4, b + 5, dom - 1, index] = False
 
     def restructure_pulses(self, pulses):
         """Restructure pulse series information

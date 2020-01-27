@@ -298,17 +298,27 @@ class DNNDataContainer(object):
         if self.config['is_str_dom_format']:
             self.x_dom = np.zeros([self.batch_size, 86, 60,
                                    self.config['num_bins']])
+            self.x_dom_exclusions = np.ones([self.batch_size, 86, 60,
+                                             self.config['num_bins']],
+                                            dtype=bool)
         else:
             self.x_ic78 = np.zeros([self.batch_size, 10, 10, 60,
                                     self.config['num_bins']])
             self.x_deepcore = np.zeros([self.batch_size, 8, 60,
                                         self.config['num_bins']])
+            self.x_ic78_exclusions = np.ones([self.batch_size, 10, 10, 60,
+                                              self.config['num_bins']],
+                                             dtype=bool)
+            self.x_deepcore_exclusions = np.ones([self.batch_size, 8, 60,
+                                                  self.config['num_bins']],
+                                                 dtype=bool)
         self.global_time_offset_batch = np.zeros([self.batch_size])
         self.runtime_batch = np.zeros([self.batch_size])
 
         # data fields to hold I3Data to be written to frame
         # (This does not require batching because values are properly
         #  written to the frame for each event by the DNNContainerHandler.)
+        self.bin_exclusions = dataclasses.I3MapKeyVectorInt()
         self.bin_indices = dataclasses.I3MapKeyVectorInt()
         self.bin_values = dataclasses.I3MapKeyVectorDouble()
         self.global_time_offset = dataclasses.I3Double()

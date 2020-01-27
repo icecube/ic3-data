@@ -19,38 +19,6 @@ reconstruction (DNN_reco) are written in C++ and
 wrapped with boost python.
 ******************************************************/
 
-// Actual C++ snippets. See docstrings at the bottom for argument info.
-
-/*template <typename T>
-inline boost::python::tuple restructure_pulses(
-                                      const boost::python::object& pulse_map_obj
-                                    ) {
-
-    // Get pulse map
-    I3RecoPulseSeriesMap& pulse_map = boost::python::extract<I3RecoPulseSeriesMap&>(pulse_map_obj);
-
-    boost::python::list charges;
-    boost::python::list times;
-    boost::python::dict dom_times_dict;
-    boost::python::dict dom_charges_dict;
-
-    for (auto const& dom_pulses : pulse_map){
-        boost::python::list dom_charges;
-        boost::python::list dom_times;
-        for (int i=0; i < dom_pulses.second.size(); i++ ){
-            dom_charges.append(dom_pulses.second.at(i).GetCharge());
-            dom_times.append(dom_pulses.second.at(i).GetTime());
-        }
-        dom_times_dict[dom_pulses.first] = dom_times;
-        dom_charges_dict[dom_pulses.first] = dom_charges;
-        charges.extend(dom_charges);
-        times.extend(dom_times);
-    }
-
-    return  boost::python::make_tuple(
-                            charges, times, dom_times_dict, dom_charges_dict );
-}*/
-
 template <typename T>
 struct select_npy_type
 {};
@@ -254,6 +222,7 @@ inline boost::python::dict get_cascade_classification_data(
         }
 
         // compress output: throw out extremely small values
+        boost::python::list bin_exclusions_list; // empty dummy exclusions
         boost::python::list bin_indices_list;
         boost::python::list bin_values_list_compressed;
         std::vector<double>::iterator values_iterator =
@@ -270,12 +239,123 @@ inline boost::python::dict get_cascade_classification_data(
 
         if (found_at_least_one_element){
             data_dict[dom_pulses.first] = boost::python::make_tuple(
-                    bin_values_list_compressed, bin_indices_list);
+                    bin_values_list_compressed, bin_indices_list,
+                    bin_exclusions_list);
         }
     }
 
     return  data_dict;
 }
+
+
+boost::python::list get_time_bin_exclusions(
+                            boost::python::object& frame_obj,
+                            boost::python::object& om_key_obj,
+                            const boost::python::list& time_bins,
+                            const boost::python::list& excluded_doms_obj,
+                            const boost::python::object& partial_exclusion_obj,
+                            const double time_offset
+                            ){
+    /*
+    This method creates a list of bin indices of a given DOM that are excluded
+    as specified with the excluded_doms and partial_exclusion.
+    */
+
+    // extract c++ data types from python objects
+    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const OMKey& om_key = boost::python::extract<OMKey&>(om_key_obj);
+    const bool partial_exclusion =
+        boost::python::extract<bool>(partial_exclusion_obj);
+
+    std::vector<std::string> excluded_doms;
+    for (int i = 0; i < len(excluded_doms_obj); ++i){
+        excluded_doms.push_back(
+                boost::python::extract<std::string>(excluded_doms_obj[i]));
+    }
+
+    // create a list for the bin exclusions
+    boost::python::list bin_exclusions_list;
+    std::set<int> bin_exclusions_set;
+
+    // ------------------------------------------------
+    // remove all excluded DOMs (!= I3TimeWindowSeries)
+    // ------------------------------------------------
+    I3TimeWindowSeriesMap exclusions;
+    for (const std::string& mapname: excluded_doms) {
+
+            I3TimeWindowSeriesMapConstPtr exclusions_segment =
+                frame.Get<I3TimeWindowSeriesMapConstPtr>(mapname);
+
+            I3VectorOMKeyConstPtr excludedoms =
+                frame.Get<I3VectorOMKeyConstPtr>(mapname);
+
+            if (exclusions_segment && partial_exclusion) {
+                /* These are TimeWindowSeries from which we have to remove
+                pulses that lie within, since partial exclusion is true and
+                we want to keep the rest of the pulses of a DOM.
+
+                For now we will combine all of the provided TimeWindowSeries
+                into a single I3TimeWindowSeriesMap: exclusions.
+                */
+                for (I3TimeWindowSeriesMap::const_iterator i =
+                    exclusions_segment->begin(); i !=
+                    exclusions_segment->end(); i++){
+                        if (i->first == om_key){
+                            exclusions[i->first] = exclusions[i->first] |
+                                i->second;
+                        }
+                    }
+            } else if (exclusions_segment && !partial_exclusion) {
+                /* These are TimeWindowSeries, but since partial exclusion
+                is false, we will remove all DOMs that have exclusion time
+                windows defined.
+                */
+                for (I3TimeWindowSeriesMap::const_iterator i =
+                    exclusions_segment->begin(); i !=
+                    exclusions_segment->end(); i++){
+                        if (i->first == om_key) {
+                            // remove complete DOM
+                            bin_exclusions_list.append(-1);
+                            return bin_exclusions_list;
+                        }
+                    }
+
+            } else if (excludedoms) {
+                /* These are whole DOMs to be ommited.
+                Examples can be BrightDOMs which is a list of DOM OMKeys that
+                will be completely removed.
+                */
+                for (const OMKey& key: *excludedoms){
+                        if (key == om_key) {
+                            // remove complete DOM
+                            bin_exclusions_list.append(-1);
+                            return bin_exclusions_list;
+                        }
+                    }
+            }
+    }
+
+    for (I3TimeWindowSeriesMap::const_iterator tws = exclusions.begin();
+                tws != exclusions.end(); tws++){
+
+        for (auto &readout : tws->second) {
+            for (int index = 0; index < len(time_bins) - 1; ++index){
+                if (readout.GetStart() - time_offset < time_bins[index+1] &&
+                    readout.GetStop() - time_offset > time_bins[index] ){
+                    bin_exclusions_set.insert(index);
+                }
+            }
+        }
+
+    }
+
+    for(auto const index : bin_exclusions_set){
+        bin_exclusions_list.append(index);
+    }
+
+    return bin_exclusions_list;
+}
+
 
 template <typename T>
 inline boost::python::tuple restructure_pulses(
@@ -489,6 +569,9 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("get_valid_pulse_map",
                        &get_valid_pulse_map);
+
+    boost::python::def("get_time_bin_exclusions",
+                       &get_time_bin_exclusions);
 
     boost::python::def("get_cascade_classification_data",
                        &get_cascade_classification_data<double>);
