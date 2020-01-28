@@ -253,7 +253,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         self.PushFrame(frame)
 
-    def _get_exclusion_om_keys(frame, dom_exclusions):
+    def _get_exclusion_om_keys(self, frame, dom_exclusions):
         """Get a list of OMKeys that correspond to DOMs that have exclusions.
 
         Parameters
