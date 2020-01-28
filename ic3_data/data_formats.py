@@ -494,7 +494,7 @@ def pulse_summmary_clipped(dom_charges, rel_dom_times, global_time_offset,
     # --------------------------------------
 
     if len(dom_charges) == 0:
-        return None, None
+        return None, None, []
 
     # # ---------------------
     # # python implementation
