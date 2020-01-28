@@ -101,6 +101,9 @@ def charge_bins(dom_charges, rel_dom_times, global_time_offset,
     list
         The list of bin indices which define bins that will be excluded.
     """
+    if len(dom_charges) == 0:
+        return [], [], []
+
     bin_values_list = []
     bin_indices_list = []
 
@@ -171,6 +174,9 @@ def charge_bins_and_dom_time_offset(dom_charges, rel_dom_times,
     list
         The list of bin indices which define bins that will be excluded.
     """
+    if len(dom_charges) == 0:
+        return [], [], []
+
     bin_values_list = []
     bin_indices_list = []
 
@@ -251,6 +257,9 @@ def charge_bins_and_times(dom_charges, rel_dom_times, global_time_offset,
     list
         The list of bin indices which define bins that will be excluded.
     """
+    if len(dom_charges) == 0:
+        return [], [], []
+
     bin_values_list = []
     bin_indices_list = []
 
@@ -332,6 +341,9 @@ def autoencoder(dom_charges, rel_dom_times, global_time_offset,
     list
         The list of bin indices which define bins that will be excluded.
     """
+    if len(dom_charges) == 0:
+        return [], [], []
+
     total_time_offset = local_time_offset + global_time_offset
 
     bin_values_list, bin_indices_list = aencoder.get_encoded_data(
@@ -396,6 +408,9 @@ def charge_weighted_time_quantiles(dom_charges, rel_dom_times,
     list
         The list of bin indices which define bins that will be excluded.
     """
+    if len(dom_charges) == 0:
+        return [], [], []
+
     bin_values_list = []
     bin_indices_list = []
 
@@ -494,7 +509,7 @@ def pulse_summmary_clipped(dom_charges, rel_dom_times, global_time_offset,
     # --------------------------------------
 
     if len(dom_charges) == 0:
-        return None, None, []
+        return [], [], []
 
     # # ---------------------
     # # python implementation
