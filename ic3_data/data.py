@@ -165,6 +165,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             om_keys = exclusion_om_keys + dom_charges_dict.keys()
             for om_key in om_keys:
 
+                # only take real in-ice DOMs
+                if om_key.om > 60:
+                    continue
+
                 if om_key in dom_charges_dict:
                     dom_charges = dom_charges_dict[om_key]
                     dom_times = dom_times_dict[om_key]
@@ -304,6 +308,10 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         """
         string = om_key.string
         dom = om_key.om
+
+        # only take real in-ice DOMs
+        if dom > 60:
+            return
 
         # Add bin values and indices if non-empty
         if bin_values_list:
