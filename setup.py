@@ -61,6 +61,9 @@ def get_icecube_includes():
                        for d in resource_dirs if os.path.islink(d)])
     include_dirs.extend(source_dirs)
 
+    if 'SROOT' in os.environ:
+        include_dirs.append(os.path.join(os.environ['SROOT'], 'include/'))
+
     return include_dirs
 
 
