@@ -87,6 +87,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # or if it is one that computes the values for one DOM at a time
         if self._config['data_format'] in [
                 'cascade_classification_data',
+                'mc_tree_input_data',
                 ]:
             self._calculate_per_dom = False
             class_string = 'ic3_data.data_formats_detector.{}'.format(
