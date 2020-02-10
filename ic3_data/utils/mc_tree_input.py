@@ -29,7 +29,8 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
     for loss in frame['I3MCTree']:
 
         # skip energy loss if it is not one of the allowed types
-        if loss.type not in allowed_types:
+        if (loss.type not in allowed_types or loss.energy < energy_cutoff
+                or loss.pos.magnitude > 2000):
             continue
 
         # walk through DOMs and calculate data

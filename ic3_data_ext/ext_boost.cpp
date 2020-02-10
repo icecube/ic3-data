@@ -325,7 +325,8 @@ inline boost::python::dict get_mc_tree_input_data_dict(
                                                     break;
             default: is_allowed_type=false;
         }
-        if (!is_allowed_type){
+        if (!is_allowed_type || loss.GetEnergy() < energy_cutoff ||
+            loss.GetPos().Magnitude() > 2000){
             continue;
         }
 
