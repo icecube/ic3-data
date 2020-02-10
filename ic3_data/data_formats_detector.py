@@ -188,10 +188,12 @@ def mc_tree_input_data(frame, pulses, config, dom_exclusions,
     distance_bins = [0., 30., 60., 150.]  # meter
     distance_cutoff = 500.  # meter
     energy_cutoff = 1  # GeV
+    add_distance = False
 
     angle_bins_rad = sorted(np.deg2rad(angle_bins))
     distance_bins = sorted(distance_bins)
 
     data_dict = get_mc_tree_input_data_dict(
-        frame, angle_bins_rad, distance_bins, distance_cutoff, energy_cutoff)
+        frame, angle_bins_rad, distance_bins, distance_cutoff, energy_cutoff,
+        add_distance)
     return global_time_offset, data_dict

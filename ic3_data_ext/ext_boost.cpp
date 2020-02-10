@@ -267,7 +267,8 @@ inline boost::python::dict get_mc_tree_input_data_dict(
                                   boost::python::object& angle_bins_obj,
                                   boost::python::object& distance_bins_obj,
                                   const double distance_cutoff,
-                                  const double energy_cutoff
+                                  const double energy_cutoff,
+                                  const bool add_distance
                                 ) {
 
     // extract objects
@@ -275,7 +276,8 @@ inline boost::python::dict get_mc_tree_input_data_dict(
 
     const unsigned int num_dist_bins =  len(distance_bins_obj) - 1;
     const unsigned int num_angle_bins =  len(angle_bins_obj) - 1;
-    const unsigned int num_bins = 2 + num_dist_bins * num_angle_bins;
+    const unsigned int num_bins =
+        1 + add_distance + num_dist_bins * num_angle_bins;
 
     std::vector<double> angle_bins;
     std::vector<double> distance_bins;
@@ -295,14 +297,17 @@ inline boost::python::dict get_mc_tree_input_data_dict(
     const I3MCTree& mctree = frame.Get<I3MCTree>("I3MCTree");
 
     // create data array for DOMs [shape: (86, 60, num_bins)]
+    double init_dist_value = 0.;
+    if (add_distance){
+        init_dist_value = std::numeric_limits<double>::max();
+    }
     std::vector<double>  dom_data[86][60];
     for(size_t string = 1; string <= 86; string++){
         for(size_t dom = 1; dom <= 60; dom++){
             dom_data[string-1][dom-1] = std::vector<double>();
 
             // intialize values
-            dom_data[string-1][dom-1].push_back(
-                                    std::numeric_limits<double>::max());
+            dom_data[string-1][dom-1].push_back(init_dist_value);
             for(size_t i=1; i < num_bins; i++){
                 dom_data[string-1][dom-1].push_back(0);
             }
@@ -366,15 +371,15 @@ inline boost::python::dict get_mc_tree_input_data_dict(
 
                 if (!out_of_bounds){
                     // calculate index
-                    unsigned int index =
-                        1 + index_dist * num_angle_bins + index_angle;
+                    unsigned int index = add_distance +
+                        index_dist * num_angle_bins + index_angle;
 
                     // accumulate energy
                     dom_data[string - 1][dom - 1][index] += loss.GetEnergy();
                 }
 
                 // check if distance is closest so far
-                if (distance < dom_data[string - 1][dom - 1][0]){
+                if (add_distance && distance < dom_data[string - 1][dom - 1][0]){
                     dom_data[string - 1][dom - 1][0] = distance;
                 }
 

@@ -6,7 +6,7 @@ from icecube.phys_services import I3Calculator
 
 
 def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
-                                distance_cutoff, energy_cutoff):
+                                distance_cutoff, energy_cutoff, add_distance):
 
     allowed_types = [dataclasses.I3Particle.NuclInt,
                      dataclasses.I3Particle.PairProd,
@@ -19,11 +19,12 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
 
     num_dist_bins = len(distance_bins) - 1
     num_angle_bins = len(angle_bins) - 1
-    num_bins = 2 + num_dist_bins * num_angle_bins
+    num_bins = 1 + add_distance + num_dist_bins * num_angle_bins
 
     # create empty data array for DOMs
     dom_data = np.zeros(shape=(86, 60, num_bins))
-    dom_data[..., 0] = float('inf')
+    if add_distance:
+        dom_data[..., 0] = float('inf')
 
     # walk through energy losses and calculate data
     for loss in frame['I3MCTree']:
@@ -63,15 +64,17 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
 
                 if not out_of_bounds:
                     # calculate index
-                    index = 1 + index_dist * num_angle_bins + index_angle
-                    assert index > 0 and index < num_bins - 1
+                    index = add_distance + \
+                        index_dist * num_angle_bins + index_angle
+                    assert index >= add_distance and index < num_bins - 1
 
                     # accumulate energy
                     dom_data[om_key.string - 1, om_key.om - 1, index] += \
                         loss.energy
 
                 # check if distance is closest so far
-                if distance < dom_data[om_key.string - 1, om_key.om - 1, 0]:
+                if (add_distance and distance <
+                        dom_data[om_key.string - 1, om_key.om - 1, 0]):
                     dom_data[om_key.string - 1, om_key.om - 1, 0] = distance
 
                 if distance < min_distance:
@@ -103,6 +106,7 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
                     bin_values_compressed.append(v)
                     bin_indices_compressed.append(i)
 
-            data_dict[om_key] = (bin_values_compressed, bin_indices_compressed,
-                                 bin_values, bin_indices_list)
+            if len(bin_values_compressed) > 0:
+                data_dict[om_key] = (bin_values_compressed,
+                                     bin_indices_compressed, bin_exclusions)
     return data_dict
