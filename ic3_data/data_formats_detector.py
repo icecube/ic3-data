@@ -194,4 +194,4 @@ def mc_tree_input_data(frame, pulses, config, dom_exclusions,
 
     data_dict = get_mc_tree_input_data_dict(
         frame, angle_bins_rad, distance_bins, distance_cutoff, energy_cutoff)
-    return data_dict
+    return global_time_offset, data_dict
