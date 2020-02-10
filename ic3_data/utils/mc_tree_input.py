@@ -50,7 +50,7 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
                 distance = diff.magnitude
 
                 # sort loss energy to correct bin index
-                index_angle = np.searchsorted(angle_bins_rad, angle) - 1
+                index_angle = np.searchsorted(angle_bins, angle) - 1
                 index_dist = np.searchsorted(distance_bins, distance) - 1
 
                 # check if it is out of bounds
@@ -84,7 +84,7 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
                     loss.energy
 
     # create constant lists
-    bin_indices = range(num_bins)
+    bin_indices_list = range(num_bins)
     bin_exclusions = []
 
     # create data dict
@@ -93,6 +93,15 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
         for dom in range(1, 61):
             om_key = icetray.OMKey(string, dom)
             bin_values = dom_data[om_key.string - 1, om_key.om - 1].tolist()
-            data_dict[om_key] = (bin_values, bin_indices, bin_exclusions)
 
+            # compress output
+            bin_values_compressed = []
+            bin_indices_compressed = []
+            for v, i in zip(bin_values, bin_indices_list):
+                if v > 1e-7:
+                    bin_values_compressed.append(v)
+                    bin_indices_compressed.append(i)
+
+            data_dict[om_key] = (bin_values_compressed, bin_indices_compressed,
+                                 bin_values, bin_indices_list)
     return data_dict
