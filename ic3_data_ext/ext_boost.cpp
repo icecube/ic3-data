@@ -3,12 +3,15 @@
 #include <math.h>
 
 #include "icetray/I3Frame.h"
+#include "icetray/OMKey.h"
 #include "dataclasses/physics/I3RecoPulse.h"
 #include "dataclasses/physics/I3Particle.h"
+#include "dataclasses/physics/I3MCTree.h"
 #include "dataclasses/geometry/I3Geometry.h"
 #include "dataclasses/geometry/I3OMGeo.h"
 #include "dataclasses/I3Map.h"
 #include "dataclasses/I3TimeWindow.h"
+#include "phys-services/I3Calculator.h"
 #include <boost/python.hpp>
 #include "numpy/ndarrayobject.h"
 
@@ -244,6 +247,186 @@ inline boost::python::dict get_cascade_classification_data(
         }
     }
 
+    return  data_dict;
+}
+
+
+// equivalent to numpy searchsorted
+template <typename T>
+unsigned int find_index(std::vector<T> array, T value){
+    unsigned int index = 0;
+    while (value > array[index] && index < array.size()){
+        index++;
+    }
+    return index;
+}
+
+template <typename T>
+inline boost::python::dict get_mc_tree_input_data_dict(
+                                  boost::python::object& frame_obj,
+                                  boost::python::object& angle_bins_obj,
+                                  boost::python::object& distance_bins_obj,
+                                  const double distance_cutoff,
+                                  const double energy_cutoff
+                                ) {
+
+    // extract objects
+    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+
+    const unsigned int num_dist_bins =  len(distance_bins_obj) - 1;
+    const unsigned int num_angle_bins =  len(angle_bins_obj) - 1;
+    const unsigned int num_bins = 2 + num_dist_bins * num_angle_bins;
+
+    std::vector<double> angle_bins;
+    std::vector<double> distance_bins;
+    for (int i = 0; i < num_angle_bins + 1; ++i){
+        angle_bins.push_back(
+                boost::python::extract<double>(angle_bins_obj[i]));
+    }
+    for (int i = 0; i < num_dist_bins + 1; ++i){
+        distance_bins.push_back(
+                boost::python::extract<double>(distance_bins_obj[i]));
+    }
+
+    // Get geometry map
+    const I3OMGeoMap& omgeo = frame.Get<I3Geometry>("I3Geometry").omgeo;
+
+    // Get I3MCTree map
+    const I3MCTree& mctree = frame.Get<I3MCTree>("I3MCTree");
+
+    // create data array for DOMs [shape: (86, 60, num_bins)]
+    std::vector<double>  dom_data[86][60];
+    for(size_t string = 1; string <= 86; string++){
+        for(size_t dom = 1; dom <= 60; dom++){
+            dom_data[string-1][dom-1] = std::vector<double>();
+
+            // intialize values
+            dom_data[string-1][dom-1].push_back(
+                                    std::numeric_limits<double>::max());
+            for(size_t i=1; i < num_bins; i++){
+                dom_data[string-1][dom-1].push_back(0);
+            }
+        }
+    }
+
+    // walk through energy losses and calculate data
+    for (auto const& loss : mctree){
+
+        // skip energy loss if it is not one of the allowed types
+        bool is_allowed_type = false;
+        switch(loss.GetType()){
+            case I3Particle::ParticleType::NuclInt:
+            case I3Particle::ParticleType::PairProd:
+            case I3Particle::ParticleType::Brems:
+            case I3Particle::ParticleType::DeltaE:
+            case I3Particle::ParticleType::EMinus:
+            case I3Particle::ParticleType::EPlus:
+            case I3Particle::ParticleType::Hadrons: is_allowed_type=true;
+                                                    break;
+            default: is_allowed_type=false;
+        }
+        if (!is_allowed_type){
+            continue;
+        }
+
+        double min_distance = std::numeric_limits<double>::max();
+        OMKey min_omkey = OMKey();
+
+        // walk through DOMs and calculate data
+        for(size_t string = 1; string <= 86; string++){
+            for(size_t dom = 1; dom <= 60; dom++){
+
+                const OMKey& om_key = OMKey(string, dom);
+
+                // get position of DOM
+                const I3Position& pos = omgeo.at(om_key).position;
+
+                // calculate distance and opening angle to DOM
+                const I3Position& diff = pos - loss.GetPos();
+                I3Particle diff_p = I3Particle();
+                diff_p.SetDir(diff.GetX(), diff.GetY(), diff.GetZ());
+                const double angle = I3Calculator::Angle(diff_p, loss);
+                const double distance = diff.Magnitude();
+
+                // sort loss energy to correct bin index
+                unsigned int index_angle =
+                    find_index<double>(angle_bins, angle) - 1;
+                unsigned int index_dist =
+                    find_index<double>(distance_bins, distance) - 1;
+
+                // check if it is out of bounds
+                bool out_of_bounds = false;
+                if (index_angle < 0 || index_angle >= num_angle_bins){
+                    out_of_bounds = true;
+                }
+                if (index_dist < 0 || index_dist >= num_dist_bins){
+                    out_of_bounds = true;
+                }
+
+                if (!out_of_bounds){
+                    // calculate index
+                    unsigned int index =
+                        1 + index_dist * num_angle_bins + index_angle;
+
+                    // accumulate energy
+                    dom_data[string - 1][dom - 1][index] += loss.GetEnergy();
+                }
+
+                // check if distance is closest so far
+                if (distance < dom_data[string - 1][dom - 1][0]){
+                    dom_data[string - 1][dom - 1][0] = distance;
+                }
+
+                if (distance < min_distance){
+                    min_distance = distance;
+                    min_omkey = om_key;
+                }
+            }
+        }
+
+        // add energy loss to closest DOM within distance_cutoff
+        if (loss.GetEnergy() > energy_cutoff){
+            if (min_distance < distance_cutoff){
+                dom_data[min_omkey.GetString() - 1]
+                         [min_omkey.GetOM() - 1]
+                         [num_bins-1] += loss.GetEnergy();
+            }
+        }
+    }
+
+    // empty dummy exclusions
+    boost::python::list bin_exclusions_list;
+
+    boost::python::dict data_dict;
+    for(size_t string = 1; string <= 86; string++){
+        for(size_t dom = 1; dom <= 60; dom++){
+            const OMKey& om_key = OMKey(string, dom);
+
+            // create value and bin indices lists
+            boost::python::list bin_values_list;
+            boost::python::list bin_indices_list;
+            boost::python::list bin_values_list_compressed;
+
+            std::vector<double>::iterator values_iterator =
+                dom_data[string - 1][dom - 1].begin();
+            bool found_at_least_one_element = false;
+
+            for (unsigned int i=0; i < num_bins; i++){
+                if (*values_iterator > 1e-7){
+                    bin_values_list_compressed.append(*values_iterator);
+                    bin_indices_list.append(i);
+                    found_at_least_one_element = true;
+                }
+                values_iterator += 1;
+            }
+
+            if (found_at_least_one_element){
+                data_dict[om_key] = boost::python::make_tuple(
+                        bin_values_list_compressed, bin_indices_list,
+                        bin_exclusions_list);
+            }
+        }
+    }
     return  data_dict;
 }
 
@@ -575,4 +758,7 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("get_cascade_classification_data",
                        &get_cascade_classification_data<double>);
+
+    boost::python::def("get_mc_tree_input_data_dict",
+                       &get_mc_tree_input_data_dict<double>);
 }

@@ -2,7 +2,7 @@ from __future__ import print_function, division
 import numpy as np
 
 from ic3_data.ext_boost import get_cascade_classification_data
-from ic3_data.utils.mc_tree_input import get_mc_tree_input_data_dict
+from ic3_data.ext_boost import get_mc_tree_input_data_dict
 
 """All data format functions must have the following signature:
 
@@ -189,8 +189,9 @@ def mc_tree_input_data(frame, pulses, config, dom_exclusions,
     distance_cutoff = 500.  # meter
     energy_cutoff = 1  # GeV
 
-    data_dict = get_mc_tree_input_data_dict(
-        frame=frame, angle_bins=angle_bins, distance_bins=distance_bins,
-        distance_cutoff=distance_cutoff, energy_cutoff=energy_cutoff)
+    angle_bins_rad = sorted(np.deg2rad(angle_bins))
+    distance_bins = sorted(distance_bins)
 
-    return global_time_offset, data_dict
+    data_dict = get_mc_tree_input_data_dict(
+        frame, angle_bins_rad, distance_bins, distance_cutoff, energy_cutoff)
+    return data_dict

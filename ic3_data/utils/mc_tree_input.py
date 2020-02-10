@@ -16,8 +16,6 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
                      dataclasses.I3Particle.EPlus,
                      dataclasses.I3Particle.Hadrons,
                      ]
-    angle_bins_rad = sorted(np.deg2rad(angle_bins))
-    distance_bins = sorted(distance_bins)
 
     num_dist_bins = len(distance_bins) - 1
     num_angle_bins = len(angle_bins) - 1
@@ -73,7 +71,7 @@ def get_mc_tree_input_data_dict(frame, angle_bins, distance_bins,
 
                 # check if distance is closest so far
                 if distance < dom_data[om_key.string - 1, om_key.om - 1, 0]:
-                    dom_data[om_key.string - 1, om_key.om - 1] = distance
+                    dom_data[om_key.string - 1, om_key.om - 1, 0] = distance
 
                 if distance < min_distance:
                     min_distance = distance
