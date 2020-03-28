@@ -16,6 +16,17 @@
 #include "numpy/ndarrayobject.h"
 
 
+#if BOOST_VERSION < 106500
+    typedef typename boost::python::numeric::array pyndarray;
+    namespace arrayFunc = boost::python::numeric;
+#else
+    #include <boost/python/numpy.hpp>
+    typedef typename boost::python::numpy::ndarray pyndarray;
+    namespace arrayFunc = boost::python::numpy;
+    namespace bn = boost::python::numpy;
+#endif
+
+
 /******************************************************
 Time critical functions for the Deep Learning-based
 reconstruction (DNN_reco) are written in C++ and
@@ -45,60 +56,82 @@ struct select_npy_type<int>
 };
 
 // https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boostpython
-template <typename T>
-boost::python::object stdVecToNumpyArray( std::vector<T> const& vec )
-{
-      npy_intp size = vec.size();
+#if BOOST_VERSION < 106500
+    template <typename T>
+    boost::python::object stdVecToNumpyArray( std::vector<T> const& vec )
+    {
+          npy_intp size = vec.size();
 
-     /* const_cast is rather horrible but we need a writable pointer
-        in C++11, vec.data() will do the trick
-        but you will still need to const_cast
-      */
+         /* const_cast is rather horrible but we need a writable pointer
+            in C++11, vec.data() will do the trick
+            but you will still need to const_cast
+          */
 
-      T * data = size ? const_cast<T *>(&vec[0])
-        : static_cast<T *>(NULL);
+          T * data = size ? const_cast<T *>(&vec[0])
+            : static_cast<T *>(NULL);
 
-    // create a PyObject * from pointer and data
-      PyObject * pyObj = PyArray_SimpleNewFromData( 1, &size, select_npy_type<T>::type, data );
-      boost::python::handle<> handle( pyObj );
-      boost::python::numeric::array arr( handle );
+        // create a PyObject * from pointer and data
+          PyObject * pyObj = PyArray_SimpleNewFromData( 1, &size, select_npy_type<T>::type, data );
+          boost::python::handle<> handle( pyObj );
+          pyndarray arr( handle );
 
-    /* The problem of returning arr is twofold: firstly the user can modify
-      the data which will betray the const-correctness
-      Secondly the lifetime of the data is managed by the C++ API and not the
-      lifetime of the numpy array whatsoever. But we have a simple solution..
-     */
+        /* The problem of returning arr is twofold: firstly the user can modify
+          the data which will betray the const-correctness
+          Secondly the lifetime of the data is managed by the C++ API and not the
+          lifetime of the numpy array whatsoever. But we have a simple solution..
+         */
 
-       return arr.copy(); // copy the object. numpy owns the copy now.
-  }
-// todo: change this to templated function and remove duplicate
+           return arr.copy(); // copy the object. numpy owns the copy now.
+      }
+    // todo: change this to templated function and remove duplicate
 
-template <std::size_t N, typename T>
-boost::python::object stdArrayToNumpyArray( std::array<T, N> const& vec )
-{
-      npy_intp size = vec.size();
+    template <std::size_t N, typename T>
+    boost::python::object stdArrayToNumpyArray( std::array<T, N> const& vec )
+    {
+          npy_intp size = vec.size();
 
-     /* const_cast is rather horrible but we need a writable pointer
-        in C++11, vec.data() will do the trick
-        but you will still need to const_cast
-      */
+         /* const_cast is rather horrible but we need a writable pointer
+            in C++11, vec.data() will do the trick
+            but you will still need to const_cast
+          */
 
-      T * data = size ? const_cast<T *>(&vec[0])
-        : static_cast<T *>(NULL);
+          T * data = size ? const_cast<T *>(&vec[0])
+            : static_cast<T *>(NULL);
 
-    // create a PyObject * from pointer and data
-      PyObject * pyObj = PyArray_SimpleNewFromData( 1, &size, select_npy_type<T>::type, data );
-      boost::python::handle<> handle( pyObj );
-      boost::python::numeric::array arr( handle );
+        // create a PyObject * from pointer and data
+          PyObject * pyObj = PyArray_SimpleNewFromData( 1, &size, select_npy_type<T>::type, data );
+          boost::python::handle<> handle( pyObj );
+          pyndarray arr( handle );
 
-    /* The problem of returning arr is twofold: firstly the user can modify
-      the data which will betray the const-correctness
-      Secondly the lifetime of the data is managed by the C++ API and not the
-      lifetime of the numpy array whatsoever. But we have a simple solution..
-     */
+        /* The problem of returning arr is twofold: firstly the user can modify
+          the data which will betray the const-correctness
+          Secondly the lifetime of the data is managed by the C++ API and not the
+          lifetime of the numpy array whatsoever. But we have a simple solution..
+         */
 
-       return arr.copy(); // copy the object. numpy owns the copy now.
-  }
+           return arr.copy(); // copy the object. numpy owns the copy now.
+      }
+#else
+    template <typename T>
+    boost::python::object stdVecToNumpyArray( std::vector<T> const& vec )
+    {
+        Py_intptr_t shape[1] = { vec.size() };
+        bn::ndarray result = bn::zeros(1, shape, bn::dtype::get_builtin<double>());
+        std::copy(vec.begin(), vec.end(),
+                  reinterpret_cast<double*>(result.get_data()));
+        return result;
+    }
+    // todo: change this to templated function and remove duplicate
+    template <std::size_t N, typename T>
+    boost::python::object stdArrayToNumpyArray( std::array<T, N> const& vec )
+    {
+        Py_intptr_t shape[1] = { vec.size() };
+        bn::ndarray result = bn::zeros(1, shape, bn::dtype::get_builtin<double>());
+        std::copy(vec.begin(), vec.end(),
+                  reinterpret_cast<double*>(result.get_data()));
+        return result;
+    }
+#endif
 
 template <typename T>
 inline boost::python::dict get_cascade_classification_data(
@@ -749,9 +782,13 @@ I3RecoPulseSeriesMapPtr get_valid_pulse_map(
 
 BOOST_PYTHON_MODULE(ext_boost)
 {
-    // numpy requires this
-    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-    import_array();
+    #if BOOST_VERSION < 106500
+        // Specify that py::numeric::array should refer to the Python type
+        // numpy.ndarray (rather than the older Numeric.array).
+        boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+        // numpy requires this
+        import_array();
+    #endif
 
     boost::python::def("restructure_pulses",
                        &restructure_pulses<double>);
