@@ -76,6 +76,30 @@ def get_boost_include_list():
     return include_dirs
 
 
+def get_i3_lib_list():
+    """Helper function to get directories for libraries
+    """
+    import os
+    i3_lib_list = []
+    if 'SROOT' in os.environ:
+        i3_lib_list.append(os.path.join(os.environ['SROOT'], 'lib/'))
+    i3_lib_list.append(os.path.join(os.environ['I3_BUILD'], 'lib/'))
+    return i3_lib_list
+
+
+def get_boost_libraries():
+    """Helper function to get a list of libraries to link against
+    """
+    import sys
+    if sys.version_info.major >= 3:
+        # python 3 libraries
+        libraries = ['boost_python36', 'boost_numpy36', 'phys-services']
+    else:
+        # python 2 libraries
+        libraries = ['boost_python', 'phys-services']
+    return libraries
+
+
 ext_modules = [
     Extension(
         'ic3_data.ext_pybind11',
@@ -90,6 +114,8 @@ ext_modules = [
     Extension(
         'ic3_data.ext_boost',
         ['ic3_data_ext/ext_boost.cpp'],
+        libraries=get_boost_libraries(),
+        library_dirs=get_i3_lib_list(),
         include_dirs=get_boost_include_list(),
         language='c++'
     ),
@@ -139,12 +165,14 @@ class BuildExt(build_ext):
         ct = self.compiler.compiler_type
         opts = self.c_opts.get(ct, [])
         if ct == 'unix':
-            opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
+            opts.append(
+                '-DVERSION_INFO="%s"' % self.distribution.get_version())
             opts.append(cpp_flag(self.compiler))
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
         elif ct == 'msvc':
-            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+            opts.append(
+                '/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
         build_ext.build_extensions(self)
