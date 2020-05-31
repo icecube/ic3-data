@@ -93,7 +93,10 @@ def get_boost_libraries():
     import sys
     if sys.version_info.major >= 3:
         # python 3 libraries
-        libraries = ['boost_python36', 'boost_numpy36', 'phys-services']
+        suffix = '{}{}'.format(sys.version_info.major, sys.version_info.minor)
+        libraries = [
+            'boost_python'+suffix, 'boost_numpy'+suffix, 'phys-services',
+        ]
     else:
         # python 2 libraries
         libraries = ['boost_python', 'phys-services']

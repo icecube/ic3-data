@@ -12,6 +12,7 @@
 #include "dataclasses/I3Map.h"
 #include "dataclasses/I3TimeWindow.h"
 #include "phys-services/I3Calculator.h"
+#include <boost/version.hpp>
 #include <boost/python.hpp>
 #include "numpy/ndarrayobject.h"
 
