@@ -1,3 +1,8 @@
+/******************************************************
+Time critical functions for the Deep Learning-based
+reconstruction (DNN_reco) are written in C++ and
+wrapped with boost python.
+******************************************************/
 #include <iostream>
 #include <string>
 #include <math.h>
@@ -14,10 +19,17 @@
 #include "phys-services/I3Calculator.h"
 #include <boost/version.hpp>
 #include <boost/python.hpp>
-#include "numpy/ndarrayobject.h"
 
+/*
+Depending on the boost version, we need to use numpy differently.
+Priot to Boost 1.63 (BOOST_VERSION == 106300) numpy was not directly
+included in boost/python
 
+See answers and discussion provided here:
+https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boostpython
+*/
 #if BOOST_VERSION < 106500
+    #include "numpy/npy_3kcompat.h"
     typedef typename boost::python::numeric::array pyndarray;
     namespace arrayFunc = boost::python::numeric;
 #else
@@ -28,36 +40,36 @@
 #endif
 
 
+
 /******************************************************
-Time critical functions for the Deep Learning-based
-reconstruction (DNN_reco) are written in C++ and
-wrapped with boost python.
+ Helper-Functions to return numpy arrays
 ******************************************************/
-
-template <typename T>
-struct select_npy_type
-{};
-
-template <>
-struct select_npy_type<double>
-{
-    const static NPY_TYPES type = NPY_DOUBLE;
-};
-
-template <>
-struct select_npy_type<float>
-{
-    const static NPY_TYPES type = NPY_FLOAT;
-};
-
-template <>
-struct select_npy_type<int>
-{
-    const static NPY_TYPES type = NPY_INT;
-};
 
 // https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boostpython
 #if BOOST_VERSION < 106500
+
+    template <typename T>
+    struct select_npy_type
+    {};
+
+    template <>
+    struct select_npy_type<double>
+    {
+        const static NPY_TYPES type = NPY_DOUBLE;
+    };
+
+    template <>
+    struct select_npy_type<float>
+    {
+        const static NPY_TYPES type = NPY_FLOAT;
+    };
+
+    template <>
+    struct select_npy_type<int>
+    {
+        const static NPY_TYPES type = NPY_INT;
+    };
+
     template <typename T>
     boost::python::object stdVecToNumpyArray( std::vector<T> const& vec )
     {
@@ -134,6 +146,9 @@ struct select_npy_type<int>
     }
 #endif
 
+/******************************************************
+ Functions with pybinding for python-based usage
+******************************************************/
 template <typename T>
 inline boost::python::dict get_cascade_classification_data(
                                   boost::python::object& frame_obj,
@@ -586,7 +601,7 @@ inline boost::python::tuple restructure_pulses(
                                 ) {
 
     // Get pulse map
-    I3RecoPulseSeriesMap& pulse_map = boost::python::extract<I3RecoPulseSeriesMap&>(pulse_map_obj);
+    const I3RecoPulseSeriesMap& pulse_map = boost::python::extract<I3RecoPulseSeriesMap&>(pulse_map_obj);
 
     boost::python::dict dom_times_dict;
     boost::python::dict dom_charges_dict;
@@ -789,6 +804,10 @@ BOOST_PYTHON_MODULE(ext_boost)
         boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
         // numpy requires this
         import_array();
+
+    #else
+        bn::initialize();
+
     #endif
 
     boost::python::def("restructure_pulses",
