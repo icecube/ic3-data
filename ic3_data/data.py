@@ -163,7 +163,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                 global_time_offset
 
             # loop through hit DOMs
-            om_keys = exclusion_om_keys + dom_charges_dict.keys()
+            om_keys = exclusion_om_keys + list(dom_charges_dict.keys())
             for om_key in om_keys:
 
                 # only take real in-ice DOMs
