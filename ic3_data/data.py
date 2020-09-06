@@ -86,6 +86,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # Check if it is a data format that computes everything at once,
         # or if it is one that computes the values for one DOM at a time
         if self._config['data_format'] in [
+                'total_dom_charge',
+                'reduced_summary_statistics_data',
                 'cascade_classification_data',
                 'mc_tree_input_data',
                 ]:

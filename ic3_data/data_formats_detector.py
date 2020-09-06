@@ -3,6 +3,7 @@ import numpy as np
 
 from ic3_data.ext_boost import get_cascade_classification_data
 from ic3_data.ext_boost import get_mc_tree_input_data_dict
+from ic3_data.ext_boost import get_reduced_summary_statistics_data
 
 """All data format functions must have the following signature:
 
@@ -47,6 +48,122 @@ from ic3_data.ext_boost import get_mc_tree_input_data_dict
         list
             Bin exclusions: indices which define bins that will be excluded.
     """
+
+
+def total_dom_charge(frame, pulses, config, dom_exclusions,
+                     partial_exclusion, *args, **kwargs):
+    """Get the total DOM charge per DOM
+
+    Parameters
+    ----------
+    frame : I3Frame
+        The current frame.
+    pulses : I3RecoPulseSeriesMap
+        The pulse series map from which to calculate the DNN input data.
+    config : dict
+        A dictionary that contains all configuration settings.
+    dom_exclusions : list of str, None
+        List of frame keys that define DOMs or TimeWindows that should be
+        excluded. Typical values for this are:
+        ['BrightDOMs','SaturationWindows', 'BadDomsList', 'CalibrationErrata']
+    partial_exclusion : bool, None
+        If True, partially exclude DOMS, e.g. only omit pulses from
+        excluded TimeWindows defined in 'dom_exclusions'.
+        If False, all pulses from a DOM will be excluded if the omkey
+        exists in the dom_exclusions.
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+
+    Returns
+    -------
+    float
+        Global time offset. Time variables will be shifted by this global
+        offset. E.g. if the network predicts a vertex time based on input
+        data relative to the vertex time, the predicted time will be shifted
+        by this global offset.
+    dict
+        A dictionary with the structure
+        I3OMKey: (list of float, list of int, list of int)
+        The first list of the tuple are the bin values and the second list
+        are the bin indices. The last list is a list of bin exclusions.
+        list
+            Bin values: values of non-zero data bins.
+        list
+            Bin indices: indices to which the returned values belong to.
+        list
+            Bin exclusions: indices which define bins that will be excluded.
+    """
+
+    add_total_charge = True
+    add_t_first = False
+    add_t_std = False
+
+    global_time_offset, data_dict = get_reduced_summary_statistics_data(
+        pulses, add_total_charge, add_t_first, add_t_std)
+
+    return global_time_offset, data_dict
+
+
+def reduced_summary_statistics_data(frame, pulses, config, dom_exclusions,
+                                    partial_exclusion, *args, **kwargs):
+    """Get a reduced set of summary statistics per DOM
+
+    These include: total dom charge, time of first pulse, std. dev of pulse
+    times. The pulse times are calculated relative to the charge weighted
+    mean time of all pulses.
+
+    Parameters
+    ----------
+    frame : I3Frame
+        The current frame.
+    pulses : I3RecoPulseSeriesMap
+        The pulse series map from which to calculate the DNN input data.
+    config : dict
+        A dictionary that contains all configuration settings.
+    dom_exclusions : list of str, None
+        List of frame keys that define DOMs or TimeWindows that should be
+        excluded. Typical values for this are:
+        ['BrightDOMs','SaturationWindows', 'BadDomsList', 'CalibrationErrata']
+    partial_exclusion : bool, None
+        If True, partially exclude DOMS, e.g. only omit pulses from
+        excluded TimeWindows defined in 'dom_exclusions'.
+        If False, all pulses from a DOM will be excluded if the omkey
+        exists in the dom_exclusions.
+    *args
+        Variable length argument list.
+    **kwargs
+        Arbitrary keyword arguments.
+
+    Returns
+    -------
+    float
+        Global time offset. Time variables will be shifted by this global
+        offset. E.g. if the network predicts a vertex time based on input
+        data relative to the vertex time, the predicted time will be shifted
+        by this global offset.
+    dict
+        A dictionary with the structure
+        I3OMKey: (list of float, list of int, list of int)
+        The first list of the tuple are the bin values and the second list
+        are the bin indices. The last list is a list of bin exclusions.
+        list
+            Bin values: values of non-zero data bins.
+        list
+            Bin indices: indices to which the returned values belong to.
+        list
+            Bin exclusions: indices which define bins that will be excluded.
+    """
+
+    add_total_charge = True
+    add_t_first = True
+    add_t_std = True
+
+    global_time_offset, data_dict = get_reduced_summary_statistics_data(
+        pulses, add_total_charge, add_t_first, add_t_std)
+
+    return global_time_offset, data_dict
 
 
 def cascade_classification_data(frame, pulses, config, dom_exclusions,
