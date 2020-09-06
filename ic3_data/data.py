@@ -318,27 +318,47 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # Add bin values and indices if non-empty
         if bin_values_list:
-            self._container.bin_values[om_key] = bin_values_list
-            self._container.bin_indices[om_key] = bin_indices_list
+            # self._container.bin_values[om_key] = bin_values_list
+            # self._container.bin_indices[om_key] = bin_indices_list
 
-            if self._is_str_dom_format:
-                self._container.x_dom[self._batch_index,
-                                      string - 1, dom - 1, index] = value
-            else:
-                if string > 78:
-                    # deep core
-                    self._container.x_deepcore[
-                        self._batch_index, string - 78 - 1, dom - 1,
-                        bin_indices_list] = bin_values_list
+            # if self._is_str_dom_format:
+            #     self._container.x_dom[self._batch_index,
+            #                           string - 1, dom - 1, index] = value
+            # else:
+            #     if string > 78:
+            #         # deep core
+            #         self._container.x_deepcore[
+            #             self._batch_index, string - 78 - 1, dom - 1,
+            #             bin_indices_list] = bin_values_list
+            #     else:
+            #         # IC78
+            #         a, b = detector.string_hex_coord_dict[string]
+            #         # Center of Detector is a,b = 0,0
+            #         # a goes from -4 to 5
+            #         # b goes from -5 to 4
+            #         self._container.x_ic78[
+            #             self._batch_index, a + 4, b + 5, dom - 1,
+            #             bin_indices_list] = bin_values_list
+
+            for value, index in zip(bin_values_list, bin_indices_list):
+                if self._is_str_dom_format:
+                    self._container.x_dom[self._batch_index,
+                                          string - 1, dom - 1, index] = value
                 else:
-                    # IC78
-                    a, b = detector.string_hex_coord_dict[string]
-                    # Center of Detector is a,b = 0,0
-                    # a goes from -4 to 5
-                    # b goes from -5 to 4
-                    self._container.x_ic78[
-                        self._batch_index, a + 4, b + 5, dom - 1,
-                        bin_indices_list] = bin_values_list
+                    if string > 78:
+                        # deep core
+                        self._container.x_deepcore[self._batch_index,
+                                                   string - 78 - 1, dom - 1,
+                                                   index] = value
+                    else:
+                        # IC78
+                        a, b = detector.string_hex_coord_dict[string]
+                        # Center of Detector is a,b = 0,0
+                        # a goes from -4 to 5
+                        # b goes from -5 to 4
+                        self._container.x_ic78[self._batch_index,
+                                               a + 4, b + 5, dom - 1,
+                                               index] = value
 
         # Add bin exclusions if non-empty
         if bin_exclusions_list:
