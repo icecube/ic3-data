@@ -57,6 +57,11 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._dom_exclusions = self._container.config['dom_exclusions']
         self._partial_exclusion = self._container.config['partial_exclusion']
 
+        if self._output_key is None:
+            self._write_to_frame = False
+        else:
+            self._write_to_frame = True
+
         # initalize data fields of data container
         self._container.initialize()
         self._batch_index = 0
@@ -86,6 +91,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # Check if it is a data format that computes everything at once,
         # or if it is one that computes the values for one DOM at a time
         if self._config['data_format'] in [
+                'total_dom_charge',
+                'reduced_summary_statistics_data',
                 'cascade_classification_data',
                 'mc_tree_input_data',
                 ]:
@@ -241,7 +248,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         self._container.runtime_batch[self._batch_index] = elapsed_time
 
         # Write data to frame
-        if self._output_key is not None:
+        if self._write_to_frame:
             frame[self._output_key + '_bin_exclusions'] = \
                 self._container.bin_exclusions
             frame[self._output_key + '_bin_indices'] = \
@@ -316,8 +323,9 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # Add bin values and indices if non-empty
         if bin_values_list:
-            self._container.bin_values[om_key] = bin_values_list
-            self._container.bin_indices[om_key] = bin_indices_list
+            if self._write_to_frame:
+                self._container.bin_values[om_key] = bin_values_list
+                self._container.bin_indices[om_key] = bin_indices_list
 
             for value, index in zip(bin_values_list, bin_indices_list):
                 if self._is_str_dom_format:
@@ -341,7 +349,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
 
         # Add bin exclusions if non-empty
         if bin_exclusions_list:
-            self._container.bin_exclusions[om_key] = bin_exclusions_list
+            if self._write_to_frame:
+                self._container.bin_exclusions[om_key] = bin_exclusions_list
             for index in bin_exclusions_list:
                 if self._is_str_dom_format:
                     if index == -1:
