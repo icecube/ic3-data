@@ -729,6 +729,77 @@ inline boost::python::tuple restructure_pulses(
                 charges_numpy, times_numpy, dom_times_dict, dom_charges_dict );
 }
 
+/* Combine DOM exclusions into a single vector of DOMs and a single
+TimeWindowsSeriesMap
+Returns:
+    I3VectorOMKey: the combined DOM exclusions
+    I3TimeWindowSeriesMap: the combined time window exclusions
+*/
+boost::python::tuple combine_exclusions(
+                    boost::python::object& frame_obj,
+                    const boost::python::list& excluded_doms_obj,
+                    const boost::python::object& partial_exclusion_obj){
+
+    // extract c++ data types from python objects
+    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const bool partial_exclusion =
+        boost::python::extract<bool>(partial_exclusion_obj);
+
+    std::vector<std::string> exclusion_series;
+    for (int i = 0; i < len(excluded_doms_obj); ++i){
+        exclusion_series.push_back(
+                boost::python::extract<std::string>(excluded_doms_obj[i]));
+    }
+
+    I3VectorOMKey exclusion_doms;
+    I3TimeWindowSeriesMap exclusion_tws;
+    for (const std::string& mapname: exclusion_series) {
+
+        I3TimeWindowSeriesMapConstPtr exclusions_segment =
+            frame.Get<I3TimeWindowSeriesMapConstPtr>(mapname);
+
+        I3VectorOMKeyConstPtr excludedoms =
+            frame.Get<I3VectorOMKeyConstPtr>(mapname);
+
+        if (exclusions_segment && partial_exclusion) {
+            /* These are TimeWindowSeries from which we have to remove
+            pulses that lie within, since partial exclusion is true and
+            we want to keep the rest of the pulses of a DOM.
+
+            For now we will combine all of the provided TimeWindowSeries
+            into a single I3TimeWindowSeriesMap: exclusion_tws.
+            */
+            for (I3TimeWindowSeriesMap::const_iterator i =
+                exclusions_segment->begin(); i !=
+                exclusions_segment->end(); i++){
+                    exclusion_tws[i->first] = exclusion_tws[i->first] |
+                        i->second;
+            }
+        } else if (exclusions_segment && !partial_exclusion) {
+            /* These are TimeWindowSeries, but since partial exclusion
+            is false, we will remove all DOMs that have exclusion time
+            windows defined.
+            */
+            for (I3TimeWindowSeriesMap::const_iterator i =
+                exclusions_segment->begin(); i !=
+                exclusions_segment->end(); i++){
+                    exclusion_doms.push_back(i->first);
+            }
+
+        } else if (excludedoms) {
+            /* These are whole DOMs to be ommited.
+            Examples can be BrightDOMs which is a list of DOM OMKeys that
+            will be completely removed.
+            */
+            for (const OMKey& key: *excludedoms){
+                    exclusion_doms.push_back(key);
+            }
+        }
+    }
+    return  boost::python::make_tuple(exclusion_doms, exclusion_tws);
+}
+
+
 I3RecoPulseSeriesMapPtr get_valid_pulse_map(
                             boost::python::object& frame_obj,
                             const boost::python::object& pulse_key_obj,
@@ -908,6 +979,9 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("get_valid_pulse_map",
                        &get_valid_pulse_map);
+
+    boost::python::def("combine_exclusions",
+                       &combine_exclusions);
 
     boost::python::def("get_time_bin_exclusions",
                        &get_time_bin_exclusions);
