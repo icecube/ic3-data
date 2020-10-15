@@ -834,7 +834,7 @@ static boost::python::list  get_charge_input_data3(
     return  matrix;
 }
 
-static boost::python::list  get_charge_input_data3(
+/*static float*  get_charge_input_data4(
             boost::python::object& frame_obj,
             const boost::python::object& pulse_key_obj
         ) {
@@ -872,7 +872,7 @@ static boost::python::list  get_charge_input_data3(
         }
     }
     return  matrix;
-}
+}*/
 
 /* Combine DOM exclusions into a single vector of DOMs and a single
 TimeWindowsSeriesMap
