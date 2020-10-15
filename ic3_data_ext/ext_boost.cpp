@@ -758,7 +758,7 @@ inline bn::ndarray get_charge_input_data(
         for (unsigned int d; d < 60; d++){
             matrix[s][d] = 0.;
         }
-    }
+    }*/
 
     // loop over pulses and accumulate charge
     for (auto const& dom_pulses : pulse_map){
@@ -768,10 +768,10 @@ inline bn::ndarray get_charge_input_data(
 
         if (om_num < 60){
             for (auto const& pulse : dom_pulses.second){
-                matrix[string_num][om_num] += pulse.GetCharge();
+                matrix[string_num, om_num] += pulse.GetCharge();
             }
         }
-    }*/
+    }
 /*    npy_intp size = 86;
     PyObject * pyObj = PyArray_SimpleNewFromData( 1, &size, select_npy_type<T>::type, matrix );
     boost::python::handle<> handle( pyObj );
