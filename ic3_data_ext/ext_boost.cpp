@@ -905,7 +905,7 @@ static void fill_charge_input_data(
     }*/
 
     // loop over pulses and accumulate charge
-    for (auto const& dom_pulses : pulse_map){
+    /*for (auto const& dom_pulses : pulse_map){
 
         int om_num = dom_pulses.first.GetOM() - 1;
         int string_num = dom_pulses.first.GetString() - 1;
@@ -915,7 +915,7 @@ static void fill_charge_input_data(
                 input_ptr[string_num][om_num] += pulse.GetCharge();
             }
         }
-    }
+    }*/
 }
 
 /* Combine DOM exclusions into a single vector of DOMs and a single
