@@ -846,11 +846,11 @@ static bn::ndarray  get_charge_input_data4(
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
     // create matrix which is a list of lists
-    float matrix[60][86];
+    float matrix[86][60];
 
     for (unsigned int s = 0; s < 86; s++){
         for (unsigned int d = 0; d < 60; d++){
-            matrix[d][s] = 0.;
+            matrix[s][d] = 0.;
         }
     }
 
@@ -872,7 +872,7 @@ static bn::ndarray  get_charge_input_data4(
         matrix,
         bn::dtype::get_builtin<float>(),
         boost::python::make_tuple(86, 60),
-        boost::python::make_tuple(sizeof(float), 60*sizeof(float)),
+        boost::python::make_tuple(sizeof(float), 86*sizeof(float)),
         boost::python::object());
 
     return  py_array.copy(); // python owns the copy now
