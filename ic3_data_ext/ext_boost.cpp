@@ -867,14 +867,18 @@ static bn::ndarray  get_charge_input_data4(
         }
     }
 
-    // create numpy array
-    bn::ndarray py_array = bn::from_data(
-        matrix,
-        bn::dtype::get_builtin<float>(),
-        boost::python::make_tuple(86, 60),
-        boost::python::make_tuple(sizeof(float), 86*sizeof(float)),
-        boost::python::object());
-    return  py_array.copy();
+
+    // increments Python reference counter to avoid immediate deallocation
+    return  py::incref(
+        // create numpy array
+        bn::ndarray py_array = bn::from_data(
+            matrix,
+            bn::dtype::get_builtin<float>(),
+            boost::python::make_tuple(86, 60),
+            boost::python::make_tuple(sizeof(float), 86*sizeof(float)),
+            boost::python::object()).ptr();
+            // capsule - contains the object owning the data (preventing it from being prematurely deallocated)
+    )
 }
 
 /* Combine DOM exclusions into a single vector of DOMs and a single
