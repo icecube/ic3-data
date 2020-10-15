@@ -907,17 +907,17 @@ static void fill_charge_input_data(
     // loop over pulses and accumulate charge
     for (auto const& dom_pulses : pulse_map){
 
-        unsigned int om_num = dom_pulses.first.GetOM() - 1;
-        unsigned int string_num = dom_pulses.first.GetString() - 1;
-        unsigned int offset = 60*string_num + om_num;
+        int om_num = dom_pulses.first.GetOM() - 1;
+        int string_num = dom_pulses.first.GetString() - 1;
+        int offset = 60*string_num + om_num;
 
         if (om_num < 60){
-            float dom_charge = 0;
+            float charge = 0;
             for (auto const& pulse : dom_pulses.second){
                 //input_ptr[string_num][om_num] += pulse.GetCharge();
-                dom_charge += pulse.GetCharge();
+                 charge += pulse.GetCharge();
             }
-            input_ptr[offset] += dom_charge;
+            input_ptr[offset] += charge;
         }
     }
 }
