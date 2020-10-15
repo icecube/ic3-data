@@ -872,7 +872,7 @@ static bn::ndarray  get_charge_input_data4(
         matrix,
         bn::dtype::get_builtin<float>(),
         boost::python::make_tuple(86, 60),
-        boost::python::make_tuple(sizeof(float), sizeof(float)),
+        boost::python::make_tuple(sizeof(float), 86*sizeof(float)),
         boost::python::object());
     return  py_array.copy();
 }
