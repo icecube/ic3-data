@@ -791,6 +791,46 @@ inline bn::ndarray get_charge_input_data2(
     return  matrix;
 }
 
+static boost::python::list  get_charge_input_data3(
+            boost::python::object& frame_obj,
+            const boost::python::object& pulse_key_obj
+        ) {
+
+    // extract c++ data types from python objects
+    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const std::string pulse_key =
+        boost::python::extract<std::string>(pulse_key_obj);
+
+    // get pulses
+    const I3RecoPulseSeriesMap& pulse_map =
+        frame.Get<I3RecoPulseSeriesMap>(pulse_key);
+
+    // create matrix which is a list of lists
+    boost::python::list matrix;
+
+    for (unsigned int s = 0; s < 86; s++){
+        boost::python::list string_list;
+        for (unsigned int d = 0; d < 60; d++){
+            string_list.append(0.);
+        }
+        matrix.append(string_list);
+    }
+
+    // loop over pulses and accumulate charge
+    for (auto const& dom_pulses : pulse_map){
+
+        int om_num = dom_pulses.first.GetOM() - 1;
+        int string_num = dom_pulses.first.GetString() - 1;
+
+        if (om_num < 60){
+            for (auto const& pulse : dom_pulses.second){
+                matrix[string_num][om_num] += pulse.GetCharge();
+            }
+        }
+    }
+    return  matrix;
+}
+
 /* Combine DOM exclusions into a single vector of DOMs and a single
 TimeWindowsSeriesMap
 Returns:
@@ -1044,6 +1084,9 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("get_charge_input_data2",
                        &get_charge_input_data2);
+
+    boost::python::def("get_charge_input_data3",
+                       &get_charge_input_data3);
 
     boost::python::def("get_valid_pulse_map",
                        &get_valid_pulse_map);
