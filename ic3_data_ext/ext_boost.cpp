@@ -909,7 +909,7 @@ static void fill_charge_input_data(
 
         int om_num = dom_pulses.first.GetOM() - 1;
         int string_num = dom_pulses.first.GetString() - 1;
-        int offset = string_num + 86*om_num;
+        int offset = string_num*60 + om_num;
 
         if (om_num < 60){
             for (auto const& pulse : dom_pulses.second){
