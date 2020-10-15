@@ -759,7 +759,7 @@ inline bn::ndarray get_charge_input_data(
 }
 
 inline bn::ndarray get_charge_input_data2(
-            const boost::python::object& frame_obj,
+            boost::python::object& frame_obj,
             const boost::python::object& pulse_key_obj,
         ) {
 
