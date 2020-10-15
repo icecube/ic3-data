@@ -743,23 +743,6 @@ inline bn::ndarray get_charge_input_data(
     bn::dtype dtype = bn::dtype::get_builtin<float>();
     bn::ndarray matrix = bn::zeros(shape, dtype);
 
-/*    // Create a 3D array that is 3 x 4 x 2
-    typedef boost::multi_array<double, 2> array_type;
-    typedef array_type::index index;
-    boost::multi_array<double, 2> matrix(boost::extents[86][60]);*/
-
-    // create and fill matrix
-    //std::array<std::array<float, 60>, 86> matrix;
-
-    //float* matrix = new float[86];
-
-    //float matrix[86][60];
-    /*for (unsigned int s; s < 86; s++){
-        for (unsigned int d; d < 60; d++){
-            matrix[s][d] = 0.;
-        }
-    }*/
-
     // loop over pulses and accumulate charge
     for (auto const& dom_pulses : pulse_map){
 
@@ -768,24 +751,10 @@ inline bn::ndarray get_charge_input_data(
 
         if (om_num < 60){
             for (auto const& pulse : dom_pulses.second){
-                matrix[string_num, om_num] += pulse.GetCharge();
+                matrix[string_num][om_num] += pulse.GetCharge();
             }
         }
     }
-/*    npy_intp size = 86;
-    PyObject * pyObj = PyArray_SimpleNewFromData( 1, &size, select_npy_type<T>::type, matrix );
-    boost::python::handle<> handle( pyObj );
-    pyndarray arr( handle );*/
-
-    /* The problem of returning arr is twofold: firstly the user can modify
-    the data which will betray the const-correctness
-    Secondly the lifetime of the data is managed by the C++ API and not the
-    lifetime of the numpy array whatsoever. But we have a simple solution..
-    */
-
-    //return arr.copy(); // copy the object. numpy owns the copy now.
-
-    /*boost::python::object input_data = stdVecToNumpyArray<double>(matrix);*/
     return  matrix;
 }
 
