@@ -20,9 +20,6 @@ wrapped with boost python.
 #include <boost/version.hpp>
 #include <boost/python.hpp>
 
-// FloatVec wrapper function to wrap a vector of floats
-#include <boost/python/vector_indexing_suite.hpp>
-
 #include "utils.cpp"
 
 /*
@@ -834,7 +831,7 @@ static boost::python::list  get_charge_input_data3(
     return  matrix;
 }
 
-/*static float*  get_charge_input_data4(
+static bn::ndarray  get_charge_input_data4(
             boost::python::object& frame_obj,
             const boost::python::object& pulse_key_obj
         ) {
@@ -849,14 +846,12 @@ static boost::python::list  get_charge_input_data3(
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
     // create matrix which is a list of lists
-    boost::python::list matrix;
+    float matrix[86][60];
 
     for (unsigned int s = 0; s < 86; s++){
-        boost::python::list string_list;
         for (unsigned int d = 0; d < 60; d++){
-            string_list.append(0.);
+            matrix[s][d] = 0.;
         }
-        matrix.append(string_list);
     }
 
     // loop over pulses and accumulate charge
@@ -871,8 +866,14 @@ static boost::python::list  get_charge_input_data3(
             }
         }
     }
-    return  matrix;
-}*/
+
+    // create numpy array
+    bn::ndarray py_array = bn::from_data(arr, bn::dtype::get_builtin<float>(),
+                                     bp::make_tuple(86, 60),
+                                     bp::make_tuple(sizeof(float)),
+                                     bp::object());
+    return  py_array;
+}
 
 /* Combine DOM exclusions into a single vector of DOMs and a single
 TimeWindowsSeriesMap
@@ -1119,10 +1120,6 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     #endif
 
-     // wrapper function
-    class_<float* >("FloatVec")
-        .def(vector_indexing_suite<float* >());
-
     boost::python::def("restructure_pulses",
                        &restructure_pulses<double>);
 
@@ -1134,6 +1131,9 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("get_charge_input_data3",
                        &get_charge_input_data3);
+
+    boost::python::def("get_charge_input_data4",
+                       &get_charge_input_data4);
 
     boost::python::def("get_valid_pulse_map",
                        &get_valid_pulse_map);
