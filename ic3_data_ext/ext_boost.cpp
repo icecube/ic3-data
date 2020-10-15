@@ -871,9 +871,9 @@ static bn::ndarray  get_charge_input_data4(
     bn::ndarray py_array = bn::from_data(
         matrix,
         bn::dtype::get_builtin<float>(),
-        bp::make_tuple(86, 60),
-        bp::make_tuple(sizeof(float)),
-        bp::object());
+        boost::python::make_tuple(86, 60),
+        boost::python::make_tuple(sizeof(float)),
+        boost::python::object());
     return  py_array;
 }
 
