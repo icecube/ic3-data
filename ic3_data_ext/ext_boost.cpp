@@ -912,12 +912,9 @@ static void fill_charge_input_data(
         int offset = 60*string_num + om_num;
 
         if (om_num < 60){
-            float charge = 0;
             for (auto const& pulse : dom_pulses.second){
-                //input_ptr[string_num][om_num] += pulse.GetCharge();
-                 charge += pulse.GetCharge();
+                 input_ptr[offset] += pulse.GetCharge();
             }
-            input_ptr[offset] += charge;
         }
     }
 }
