@@ -890,7 +890,7 @@ static void fill_charge_input_data(
         boost::python::extract<std::string>(pulse_key_obj);
 
     // get a pointer to the input data
-    float** input_ptr = reinterpret_cast<float**>(input.get_data());
+    float* input_ptr = reinterpret_cast<float*>(input.get_data());
 
 
     // get pulses
@@ -909,10 +909,12 @@ static void fill_charge_input_data(
 
         int om_num = dom_pulses.first.GetOM() - 1;
         int string_num = dom_pulses.first.GetString() - 1;
+        int offset = string_num*60 + om_num;
 
         if (om_num < 60){
             for (auto const& pulse : dom_pulses.second){
-                input_ptr[om_num][string_num] += pulse.GetCharge();
+                //input_ptr[string_num][om_num] += pulse.GetCharge();
+                input_ptr[offset] += pulse.GetCharge();
             }
         }
     }
