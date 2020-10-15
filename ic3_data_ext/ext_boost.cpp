@@ -845,7 +845,7 @@ static bn::ndarray  get_charge_input_data4(
     const I3RecoPulseSeriesMap& pulse_map =
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
-    // create matrix which is a list of lists
+    // create matrix
     float matrix[86][60];
 
     for (unsigned int s = 0; s < 86; s++){
@@ -876,6 +876,46 @@ static bn::ndarray  get_charge_input_data4(
         boost::python::object());
 
     return  py_array.copy(); // python owns the copy now
+}
+
+static void fill_charge_input_data(
+            boost::python::object& frame_obj,
+            boost::python::numpy::ndarray& input,
+            const boost::python::object& pulse_key_obj
+        ) {
+
+    // extract c++ data types from python objects
+    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const std::string pulse_key =
+        boost::python::extract<std::string>(pulse_key_obj);
+
+    // get a pointer to the input data
+    float** input_ptr = reinterpret_cast<float**>(input.get_data());
+
+
+    // get pulses
+    const I3RecoPulseSeriesMap& pulse_map =
+        frame.Get<I3RecoPulseSeriesMap>(pulse_key);
+
+    /*// initialize with zeros
+    for (unsigned int s = 0; s < 86; s++){
+        for (unsigned int d = 0; d < 60; d++){
+            input_ptr[s][d] = 0.;
+        }
+    }*/
+
+    // loop over pulses and accumulate charge
+    for (auto const& dom_pulses : pulse_map){
+
+        int om_num = dom_pulses.first.GetOM() - 1;
+        int string_num = dom_pulses.first.GetString() - 1;
+
+        if (om_num < 60){
+            for (auto const& pulse : dom_pulses.second){
+                input_ptr[string_num][om_num] += pulse.GetCharge();
+            }
+        }
+    }
 }
 
 /* Combine DOM exclusions into a single vector of DOMs and a single
@@ -1137,6 +1177,9 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("get_charge_input_data4",
                        &get_charge_input_data4);
+
+    boost::python::def("fill_charge_input_data",
+                       &fill_charge_input_data);
 
     boost::python::def("get_valid_pulse_map",
                        &get_valid_pulse_map);
