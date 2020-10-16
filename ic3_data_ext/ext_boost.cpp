@@ -851,11 +851,11 @@ static bn::ndarray  get_charge_input_data4(
     const int n_bins = 1;
 
     // create matrix
-    float matrix[n_strings][n_doms];
+    float matrix[n_strings][n_doms][n_bins];
 
     for (unsigned int s = 0; s < n_strings; s++){
         for (unsigned int d = 0; d < n_doms; d++){
-            matrix[s][d] = 0.;
+            matrix[s][d][0] = 0.;
         }
     }
 
@@ -867,7 +867,7 @@ static bn::ndarray  get_charge_input_data4(
 
         if (om_num < n_doms){
             for (auto const& pulse : dom_pulses.second){
-                matrix[string_num][om_num] += pulse.GetCharge();
+                matrix[string_num][om_num][0] += pulse.GetCharge();
             }
         }
     }
@@ -878,7 +878,7 @@ static bn::ndarray  get_charge_input_data4(
         bn::dtype::get_builtin<float>(),
         boost::python::make_tuple(n_strings, n_doms, n_bins),
         boost::python::make_tuple(
-            n_doms*n_bins*sizeof(float), n_bins*sizeof(float)),
+            n_doms*n_bins*sizeof(float), n_bins*sizeof(float), sizeof(float)),
         boost::python::object());
 
     return  py_array.copy(); // python owns the copy now
