@@ -905,12 +905,16 @@ static void fill_charge_input_data(
         }
     }*/
 
+    // define how many value bins we have: here it is just one
+    const int n_bins = 1;
+
     // loop over pulses and accumulate charge
     for (auto const& dom_pulses : pulse_map){
 
+        int bin_index = 0;
         int om_num = dom_pulses.first.GetOM() - 1;
         int string_num = dom_pulses.first.GetString() - 1;
-        int offset = 60*string_num + om_num;
+        int offset = 60*n_bins*string_num + n_bins*om_num + bin_index;
 
         if (om_num < 60){
             for (auto const& pulse : dom_pulses.second){
