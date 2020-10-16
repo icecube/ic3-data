@@ -851,11 +851,11 @@ static bn::ndarray  get_charge_input_data4(
     const int n_bins = 1;
 
     // create matrix
-    float matrix[n_strings][n_doms][n_bins];
+    float matrix[n_strings][n_doms];
 
     for (unsigned int s = 0; s < 86; s++){
         for (unsigned int d = 0; d < 60; d++){
-            matrix[s][d][0] = 0.;
+            matrix[s][d] = 0.;
         }
     }
 
@@ -867,7 +867,7 @@ static bn::ndarray  get_charge_input_data4(
 
         if (om_num < 60){
             for (auto const& pulse : dom_pulses.second){
-                matrix[string_num][om_num][0] += pulse.GetCharge();
+                matrix[string_num][om_num] += pulse.GetCharge();
             }
         }
     }
