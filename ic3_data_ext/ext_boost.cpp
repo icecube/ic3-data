@@ -845,8 +845,13 @@ static bn::ndarray  get_charge_input_data4(
     const I3RecoPulseSeriesMap& pulse_map =
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
+    // define dimensions of the array
+    const int n_strings = 86;
+    const int n_doms = 60;
+    const int n_bins = 1;
+
     // create matrix
-    float matrix[86][60][1];
+    float matrix[n_strings][n_doms][n_bins];
 
     for (unsigned int s = 0; s < 86; s++){
         for (unsigned int d = 0; d < 60; d++){
@@ -871,9 +876,9 @@ static bn::ndarray  get_charge_input_data4(
     bn::ndarray py_array = bn::from_data(
         matrix,
         bn::dtype::get_builtin<float>(),
-        boost::python::make_tuple(86, 60, 1),
+        boost::python::make_tuple(86, 60),
         boost::python::make_tuple(
-            sizeof(float), 86*sizeof(float), 86*60*sizeof(float)),
+            sizeof(float), 86*sizeof(float)),
         boost::python::object());
 
     return  py_array.copy(); // python owns the copy now
