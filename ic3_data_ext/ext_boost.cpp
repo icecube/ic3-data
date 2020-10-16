@@ -898,12 +898,12 @@ static void fill_charge_input_data(
     const I3RecoPulseSeriesMap& pulse_map =
         frame.Get<I3RecoPulseSeriesMap>(pulse_key);
 
-    // initialize with zeros
+    /*// initialize with zeros
     for (unsigned int s = 0; s < 86; s++){
         for (unsigned int d = 0; d < 60; d++){
             input_ptr[60*s + d] = 0.;
         }
-    }
+    }*/
 
     // define how many value bins we have: here it is just one
     const int n_bins = 1;
