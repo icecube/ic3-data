@@ -117,7 +117,8 @@ inline void fill_reduced_summary_statistics_data(
                                   const boost::python::object pulse_map_obj,
                                   const bool add_total_charge,
                                   const bool add_t_first,
-                                  const bool add_t_std
+                                  const bool add_t_std,
+                                  const int batch_index
                                 ) {
 
     // Get pulse map

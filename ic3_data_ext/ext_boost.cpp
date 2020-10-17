@@ -42,6 +42,7 @@ https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boos
     namespace bn = boost::python::numpy;
 #endif
 
+namespace bp = boost::python;
 
 
 /******************************************************
@@ -901,7 +902,11 @@ BOOST_PYTHON_MODULE(ext_boost)
                        &get_reduced_summary_statistics_data<double>);
 
     boost::python::def("fill_reduced_summary_statistics_data",
-                       &fill_reduced_summary_statistics_data<double>);
+                       &fill_reduced_summary_statistics_data<double>,
+                       (bp::arg("container"), bp::arg("pulse_key"),
+                        bp::arg("add_total_charge"), bp::arg("add_t_first"),
+                        bp::arg("add_t_std"), bp::arg("batch_index")),
+                       );
 
     boost::python::def("get_cascade_classification_data",
                        &get_cascade_classification_data<double>);
