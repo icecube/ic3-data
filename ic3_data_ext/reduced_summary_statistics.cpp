@@ -270,13 +270,9 @@ inline void fill_reduced_summary_statistics_data(
                 // Get reference to data field
                 bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
                     container.attr("x_dom"));
-                std::cout << "batch_index: " << batch_index << std::endl;
-                std::cout << "string_num: " << string_num << std::endl;
-                std::cout << "om_num: " << om_num << std::endl;
-                std::cout << "i: " << i << std::endl;
 
-                x_dom[batch_index, string_num, om_num,
-                    bin_indices_list[i]] = bin_values_list[i];
+                x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
+                    = bin_values_list[i];
 
             }else{
 
@@ -287,8 +283,8 @@ inline void fill_reduced_summary_statistics_data(
                     bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
                         container.attr("x_deepcore"));
 
-                    x_deepcore[batch_index, string_num - 78, om_num,
-                        bin_indices_list[i]] = bin_values_list[i];
+                    x_deepcore[batch_index][string_num - 78][om_num]
+                        [bin_indices_list[i]] = bin_values_list[i];
 
                 // Main Array (Hex-Structure)
                 }else{
@@ -303,8 +299,8 @@ inline void fill_reduced_summary_statistics_data(
                     // Center of Detector is hex_a, hex_b = 0, 0
                     // hex_a goes from -4 to 5
                     // hex_b goes from -5 to 4
-                    x_ic78[batch_index, hex_a + 4, hex_b + 5, om_num,
-                        bin_indices_list[i]] = bin_values_list[i];
+                    x_ic78[batch_index][hex_a + 4][hex_b + 5][om_num]
+                        [bin_indices_list[i]] = bin_values_list[i];
                 }
 
             }
