@@ -174,6 +174,8 @@ inline void fill_reduced_summary_statistics_data(
                 acc_total.add_element(pulse.GetTime(), pulse.GetCharge());
             }
         }
+
+        // set global time offset values
         global_time_offset = acc_total.mean();
         global_time_offset_batch[batch_index] = global_time_offset.value;
     }
@@ -186,6 +188,9 @@ inline void fill_reduced_summary_statistics_data(
         if (n_pulses == 0){
             continue;
         }
+
+        // get om_key for conenience
+        const I3OMKey om_key = dom_pulses.first;
 
         // create and initialize variables
         T dom_charge_sum = 0.0;
@@ -203,41 +208,47 @@ inline void fill_reduced_summary_statistics_data(
             }
         }
 
-        // add data
+        // -------------------------------------
+        // Collect values and update data fields
+        // -------------------------------------
         int counter = 0;
-        boost::python::list bin_exclusions_list; // empty dummy exclusions
-        boost::python::list bin_indices_list;
-        boost::python::list bin_values_list;
+        vector<int> bin_exclusions_list; // empty dummy exclusions
+        vector<int> bin_indices_list;
+        vector<double> bin_values_list;
 
         // Total DOM charge
         if (add_total_charge){
-            bin_indices_list.append(counter);
-            bin_values_list.append(dom_charge_sum);
+
+            // update
+            bin_indices_list.push_back(counter);
+            bin_values_list.push_back(dom_charge_sum);
             counter += 1;
         }
 
         // time of first pulse
         if (add_t_first){
-            bin_indices_list.append(counter);
-            bin_values_list.append(
+            bin_indices_list.push_back(counter);
+            bin_values_list.push_back(
                 dom_pulses.second[0].GetTime() - global_time_offset.value);
             counter += 1;
         }
 
         // time std deviation of pulses at DOM
         if (add_t_std){
-            bin_indices_list.append(counter);
+            bin_indices_list.push_back(counter);
             if (n_pulses == 1){
-                bin_values_list.append(0.);
+                bin_values_list.push_back(0.);
             } else{
-                bin_values_list.append(acc.std());
+                bin_values_list.push_back(acc.std());
             }
             counter += 1;
         }
 
-        // add to data_dict
-        data_dict[dom_pulses.first] = boost::python::make_tuple(
-                bin_values_list, bin_indices_list, bin_exclusions_list);
+        // Update fields
+        bin_indices[om_key] = bin_indices_list;
+        bin_exclusions[om_key] = bin_exclusions_list;
+        bin_values[om_key] = bin_values_list;
+        // -------------------------------------
     }
 }
 
