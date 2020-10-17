@@ -1202,7 +1202,7 @@ BOOST_PYTHON_MODULE(ext_boost)
                        &get_time_bin_exclusions);
 
     boost::python::def("get_reduced_summary_statistics_data",
-                       &get_reduced_summary_statistics_data<double>);
+                       &get_reduced_summary_statistics_data<float>);
 
     boost::python::def("get_cascade_classification_data",
                        &get_cascade_classification_data<double>);
