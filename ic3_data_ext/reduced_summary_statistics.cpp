@@ -300,39 +300,39 @@ inline void fill_reduced_summary_statistics_data(
 
 }
 
-template <typename T>
-inline void fill_container__str_dom_format(
-                                  boost::python::object container,
-                                  const boost::python::object pulse_map_obj,
-                                  const bool add_total_charge,
-                                  const bool add_t_first,
-                                  const bool add_t_std,
-                                  const int batch_index
-                                ) {
+// template <typename T>
+// inline void fill_container__str_dom_format(
+//                                   boost::python::object container,
+//                                   const boost::python::object pulse_map_obj,
+//                                   const bool add_total_charge,
+//                                   const bool add_t_first,
+//                                   const bool add_t_std,
+//                                   const int batch_index
+//                                 ) {
 
-    // -------------------------------------------------------------
-    // create references to the data fields that need to be modified
-    // -------------------------------------------------------------
-    I3MapKeyVectorInt& bin_indices = boost::python::extract<I3MapKeyVectorInt&>(
-        container.attr("bin_indices"));
-    I3MapKeyVectorInt& bin_exclusions = boost::python::extract<I3MapKeyVectorInt&>(
-        container.attr("bin_exclusions"));
-    I3MapKeyVectorDouble& bin_values = boost::python::extract<I3MapKeyVectorDouble&>(
-        container.attr("bin_values"));
-    I3Double& global_time_offset = boost::python::extract<I3Double&>(
-        container.attr("global_time_offset"));
+//     // -------------------------------------------------------------
+//     // create references to the data fields that need to be modified
+//     // -------------------------------------------------------------
+//     I3MapKeyVectorInt& bin_indices = boost::python::extract<I3MapKeyVectorInt&>(
+//         container.attr("bin_indices"));
+//     I3MapKeyVectorInt& bin_exclusions = boost::python::extract<I3MapKeyVectorInt&>(
+//         container.attr("bin_exclusions"));
+//     I3MapKeyVectorDouble& bin_values = boost::python::extract<I3MapKeyVectorDouble&>(
+//         container.attr("bin_values"));
+//     I3Double& global_time_offset = boost::python::extract<I3Double&>(
+//         container.attr("global_time_offset"));
 
-    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
-        container.attr("global_time_offset_batch"));
+//     bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
+//         container.attr("global_time_offset_batch"));
 
-    // x_dom, x_dom_exclusions, x_ic78, x_ic78_exclusions, x_deepcore
-    // and x_deepcore_exclusions depend on is_str_dom_format and do not
-    // always exist. Therefore we will get them further below when needed
-    // -------------------------------------------------------------
+//     // x_dom, x_dom_exclusions, x_ic78, x_ic78_exclusions, x_deepcore
+//     // and x_deepcore_exclusions depend on is_str_dom_format and do not
+//     // always exist. Therefore we will get them further below when needed
+//     // -------------------------------------------------------------
 
-    // set global time offset values
-    global_time_offset = global_offset_time;
-    global_time_offset_batch[batch_index] = global_time_offset.value;
-}
+//     // set global time offset values
+//     global_time_offset = global_offset_time;
+//     global_time_offset_batch[batch_index] = global_time_offset.value;
+// }
 
 #endif
