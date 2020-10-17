@@ -166,14 +166,13 @@ inline void fill_reduced_summary_statistics_data(
         container.attr("global_time_offset_batch"));
 
     // define numpy arrays
-    bn::ndarray x_dom;
-    bn::ndarray x_dom_exclusions;
-    bn::ndarray x_ic78;
-    bn::ndarray x_ic78_exclusions;
-    bn::ndarray x_deepcore;
-    bn::ndarray x_deepcore_exclusions;
+    bn::ndarray& x_dom;
+    bn::ndarray& x_dom_exclusions;
+    bn::ndarray& x_ic78;
+    bn::ndarray& x_ic78_exclusions;
+    bn::ndarray& x_deepcore;
+    bn::ndarray& x_deepcore_exclusions;
 
-    // assign references
     if (is_str_dom_format){
         x_dom = boost::python::extract<bn::ndarray>(
             container.attr("x_dom"));
