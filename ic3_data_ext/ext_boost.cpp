@@ -21,7 +21,7 @@ wrapped with boost python.
 #include <boost/python.hpp>
 
 #include "utils.cpp"
-#include "reduced_summary_statistics_data.cpp"
+#include "reduced_summary_statistics.cpp"
 
 /*
 Depending on the boost version, we need to use numpy differently.
