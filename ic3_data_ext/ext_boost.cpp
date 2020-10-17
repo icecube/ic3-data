@@ -733,7 +733,7 @@ inline boost::python::tuple restructure_pulses(
 Create an input tensor of shape [86, 60] which holds the total charge per DOM.
 */
 inline bn::ndarray get_charge_input_data(
-            const boost::python::object& pulse_map_obj
+            const boost::python::object pulse_map_obj
         ) {
 
     // Get pulse map
@@ -759,8 +759,8 @@ inline bn::ndarray get_charge_input_data(
 }
 
 inline bn::ndarray get_charge_input_data2(
-            boost::python::object& frame_obj,
-            const boost::python::object& pulse_key_obj
+            boost::python::object frame_obj,
+            const boost::python::object pulse_key_obj
         ) {
 
     // extract c++ data types from python objects
@@ -792,8 +792,8 @@ inline bn::ndarray get_charge_input_data2(
 }
 
 static boost::python::list  get_charge_input_data3(
-            boost::python::object& frame_obj,
-            const boost::python::object& pulse_key_obj
+            boost::python::object frame_obj,
+            const boost::python::object pulse_key_obj
         ) {
 
     // extract c++ data types from python objects
@@ -832,8 +832,8 @@ static boost::python::list  get_charge_input_data3(
 }
 
 static bn::ndarray  get_charge_input_data4(
-            boost::python::object& frame_obj,
-            const boost::python::object& pulse_key_obj
+            boost::python::object frame_obj,
+            const boost::python::object pulse_key_obj
         ) {
 
     // extract c++ data types from python objects
@@ -885,9 +885,9 @@ static bn::ndarray  get_charge_input_data4(
 }
 
 static void fill_charge_input_data(
-            boost::python::object& frame_obj,
-            boost::python::numpy::ndarray& input,
-            const boost::python::object& pulse_key_obj
+            boost::python::object frame_obj,
+            boost::python::numpy::ndarray input,
+            const boost::python::object pulse_key_obj
         ) {
 
     // extract c++ data types from python objects
