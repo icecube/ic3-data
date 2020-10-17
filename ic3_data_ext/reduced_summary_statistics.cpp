@@ -133,10 +133,14 @@ inline void fill_reduced_summary_statistics_data(
 
     // create references to the data fields that need to be modified
 
-    I3MapKeyVectorInt& bin_indices = container.attr("bin_indices");
-    I3MapKeyVectorInt& bin_exclusions = container.attr("bin_exclusions");
-    I3MapKeyVectorDouble& bin_values = container.attr("bin_values");
-    I3Double& global_time_offset = container.attr("global_time_offset");
+    I3MapKeyVectorInt& bin_indices = boost::python::extract<I3MapKeyVectorInt&>(
+        container.attr("bin_indices"));
+    I3MapKeyVectorInt& bin_exclusions = boost::python::extract<I3MapKeyVectorInt&>(
+        container.attr("bin_exclusions"));
+    I3MapKeyVectorDouble& bin_values = boost::python::extract<I3MapKeyVectorDouble&>(
+        container.attr("bin_values"));
+    I3Double& bin_values = boost::python::extract<I3Double&>(
+        container.attr("global_time_offset"));
 
     if (is_str_dom_format){
         // auto np_x_dom =
