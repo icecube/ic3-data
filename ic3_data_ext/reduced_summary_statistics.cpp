@@ -241,10 +241,10 @@ inline void fill_reduced_summary_statistics_data(
         }
 
         // collect lists for DOM
-        om_keys.push_back(om_key);
-        bin_indices.push_back(bin_indices_list);
-        bin_exclusions.push_back(bin_exclusions_list);
-        bin_values.push_back(bin_values_list);
+        // om_keys.push_back(om_key);
+        // bin_indices.push_back(bin_indices_list);
+        // bin_exclusions.push_back(bin_exclusions_list);
+        // bin_values.push_back(bin_values_list);
 
         // add data values
         for (int i=0; i < bin_indices_list.size(); i++){
