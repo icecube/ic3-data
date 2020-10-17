@@ -190,7 +190,7 @@ inline void fill_reduced_summary_statistics_data(
         }
 
         // get om_key for conenience
-        const I3OMKey om_key = dom_pulses.first;
+        const OMKey om_key = dom_pulses.first;
 
         // create and initialize variables
         T dom_charge_sum = 0.0;
