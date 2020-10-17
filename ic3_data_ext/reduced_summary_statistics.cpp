@@ -153,12 +153,13 @@ inline void fill_reduced_summary_statistics_data(
     // create variables for the output data
     const int num_hit_doms = pulse_map.size();
 
-    int vector_counter = 0;
-    std::vector<OMKey> om_keys(num_hit_doms);
-    std::vector<I3VectorInt> bin_indices(num_hit_doms);
-    std::vector<I3VectorInt> bin_exclusions(num_hit_doms);
-    std::vector<I3VectorDouble> bin_values(num_hit_doms);
     T global_offset_time = 0;
+
+    int vector_counter = 0;
+    std::vector<OMKey&> om_keys(num_hit_doms);
+    std::vector<I3VectorInt&> bin_indices(num_hit_doms);
+    std::vector<I3VectorInt&> bin_exclusions(num_hit_doms);
+    std::vector<I3VectorDouble&> bin_values(num_hit_doms);
 
     // Iterate over pulses once to obtain global time offset
     if (add_t_first){
