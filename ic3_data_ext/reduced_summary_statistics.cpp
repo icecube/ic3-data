@@ -165,7 +165,6 @@ inline void fill_reduced_summary_statistics_data(
 
     // create a dict for the output data
     boost::python::dict data_dict;
-    T global_offset_time = 0.;
 
     // Iterate over pulses once to obtain global time offset
     if (add_t_first){
@@ -175,7 +174,7 @@ inline void fill_reduced_summary_statistics_data(
                 acc_total.add_element(pulse.GetTime(), pulse.GetCharge());
             }
         }
-        global_offset_time = acc_total.mean();
+        global_time_offset = acc_total.mean();
     }
 
     // now iterate over DOMs and pulses to fill data_dict
@@ -220,7 +219,7 @@ inline void fill_reduced_summary_statistics_data(
         if (add_t_first){
             bin_indices_list.append(counter);
             bin_values_list.append(
-                dom_pulses.second[0].GetTime() - global_offset_time);
+                dom_pulses.second[0].GetTime() - global_time_offset);
             counter += 1;
         }
 
