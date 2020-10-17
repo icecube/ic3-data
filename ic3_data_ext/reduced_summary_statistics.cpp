@@ -131,8 +131,9 @@ inline void fill_reduced_summary_statistics_data(
     const bool is_str_dom_format =  boost::python::extract<bool>(
         container.attr("config")["is_str_dom_format"]);
 
+    // -------------------------------------------------------------
     // create references to the data fields that need to be modified
-
+    // -------------------------------------------------------------
     I3MapKeyVectorInt& bin_indices = boost::python::extract<I3MapKeyVectorInt&>(
         container.attr("bin_indices"));
     I3MapKeyVectorInt& bin_exclusions = boost::python::extract<I3MapKeyVectorInt&>(
@@ -142,12 +143,20 @@ inline void fill_reduced_summary_statistics_data(
     I3Double& global_time_offset = boost::python::extract<I3Double&>(
         container.attr("global_time_offset"));
 
+    bn::ndarray& global_time_offset_batch =
+        container.attr("global_time_offset_batch");
+
     if (is_str_dom_format){
-        // auto np_x_dom =
-        // .get_dtype()
-        // x_dom =
-        // x_dom_exclusions =
+        bn::ndarray& x_dom = container.attr("x_dom");
+        bn::ndarray& x_dom_exclusions = container.attr("x_dom_exclusions");
+    }else{
+        bn::ndarray& x_ic78 = container.attr("x_ic78");
+        bn::ndarray& x_ic78_exclusions = container.attr("x_ic78_exclusions");
+        bn::ndarray& x_deepcore = container.attr("x_deepcore");
+        bn::ndarray& x_deepcore_exclusions =
+            container.attr("x_deepcore_exclusions");
     }
+    // -------------------------------------------------------------
 
     // create a dict for the output data
     boost::python::dict data_dict;
