@@ -905,7 +905,7 @@ BOOST_PYTHON_MODULE(ext_boost)
                        &fill_reduced_summary_statistics_data<double>,
                        (bp::arg("container"), bp::arg("pulse_key"),
                         bp::arg("add_total_charge"), bp::arg("add_t_first"),
-                        bp::arg("add_t_std"), bp::arg("batch_index")),
+                        bp::arg("add_t_std"), bp::arg("batch_index"))
                        );
 
     boost::python::def("get_cascade_classification_data",
