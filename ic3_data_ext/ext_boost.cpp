@@ -234,9 +234,9 @@ static void get_reduced_summary_statistics_data(
             counter += 1;
         }
 
-        // add to data_dict
-        data_dict[dom_pulses.first] = boost::python::make_tuple(
-                bin_values_list, bin_indices_list, bin_exclusions_list);
+        // // add to data_dict
+        // data_dict[dom_pulses.first] = boost::python::make_tuple(
+        //         bin_values_list, bin_indices_list, bin_exclusions_list);
     }
 
     // return  boost::python::make_tuple(global_offset_time, data_dict);
