@@ -150,26 +150,6 @@ inline void fill_reduced_summary_statistics_data(
     const bool is_str_dom_format =  boost::python::extract<bool>(
         container.attr("config")["is_str_dom_format"]);
 
-    // -------------------------------------------------------------
-    // create references to the data fields that need to be modified
-    // -------------------------------------------------------------
-    I3MapKeyVectorInt& bin_indices = boost::python::extract<I3MapKeyVectorInt&>(
-        container.attr("bin_indices"));
-    I3MapKeyVectorInt& bin_exclusions = boost::python::extract<I3MapKeyVectorInt&>(
-        container.attr("bin_exclusions"));
-    I3MapKeyVectorDouble& bin_values = boost::python::extract<I3MapKeyVectorDouble&>(
-        container.attr("bin_values"));
-    I3Double& global_time_offset = boost::python::extract<I3Double&>(
-        container.attr("global_time_offset"));
-
-    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
-        container.attr("global_time_offset_batch"));
-
-    // x_dom, x_dom_exclusions, x_ic78, x_ic78_exclusions, x_deepcore
-    // and x_deepcore_exclusions depend on is_str_dom_format and do not
-    // always exist. Therefore we will get them further below when needed
-    // -------------------------------------------------------------
-
     // create a dict for the output data
     boost::python::dict data_dict;
 
@@ -182,9 +162,7 @@ inline void fill_reduced_summary_statistics_data(
             }
         }
 
-        // set global time offset values
-        global_time_offset = acc_total.mean();
-        global_time_offset_batch[batch_index] = global_time_offset.value;
+        T global_offset_time = acc_total.mean();
     }
 
     // now iterate over DOMs and pulses to fill data_dict
@@ -243,7 +221,7 @@ inline void fill_reduced_summary_statistics_data(
         if (add_t_first){
             bin_indices_list.push_back(counter);
             bin_values_list.push_back(
-                dom_pulses.second[0].GetTime() - global_time_offset.value);
+                dom_pulses.second[0].GetTime() - global_offset_time);
             counter += 1;
         }
 
@@ -315,6 +293,31 @@ inline void fill_reduced_summary_statistics_data(
 
         // -------------------------------------
     }
+
+    // -------------------------------------------------------------
+    // create references to the data fields that need to be modified
+    // -------------------------------------------------------------
+    I3MapKeyVectorInt& bin_indices = boost::python::extract<I3MapKeyVectorInt&>(
+        container.attr("bin_indices"));
+    I3MapKeyVectorInt& bin_exclusions = boost::python::extract<I3MapKeyVectorInt&>(
+        container.attr("bin_exclusions"));
+    I3MapKeyVectorDouble& bin_values = boost::python::extract<I3MapKeyVectorDouble&>(
+        container.attr("bin_values"));
+    I3Double& global_time_offset = boost::python::extract<I3Double&>(
+        container.attr("global_time_offset"));
+
+    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
+        container.attr("global_time_offset_batch"));
+
+    // x_dom, x_dom_exclusions, x_ic78, x_ic78_exclusions, x_deepcore
+    // and x_deepcore_exclusions depend on is_str_dom_format and do not
+    // always exist. Therefore we will get them further below when needed
+    // -------------------------------------------------------------
+
+    // set global time offset values
+    global_time_offset = global_offset_time;
+    global_time_offset_batch[batch_index] = global_time_offset.value;
+
 }
 
 #endif
