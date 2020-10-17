@@ -201,6 +201,11 @@ inline void fill_reduced_summary_statistics_data(
         const int om_num = om_key.GetOM() - 1;
         const int string_num = om_key.GetString() - 1;
 
+        // only take real in-ice DOMs
+        if (om_num >= 60){
+            continue;
+        }
+
         // create and initialize variables
         T dom_charge_sum = 0.0;
         MeanVarianceAccumulator<T> acc;
@@ -265,6 +270,9 @@ inline void fill_reduced_summary_statistics_data(
                 // Get reference to data field
                 bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
                     container.attr("x_dom"));
+                std::cout << "batch_index: " << batch_index << std::endl;
+                std::cout << "string_num: " << string_num << std::endl;
+                std::cout << "om_num: " << om_num << std::endl;
                 std::cout << "i: " << i << std::endl;
 
                 x_dom[batch_index, string_num, om_num,
