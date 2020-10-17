@@ -152,6 +152,7 @@ inline void fill_reduced_summary_statistics_data(
 
     // create a dict for the output data
     boost::python::dict data_dict;
+    T global_offset_time = 0;
 
     // Iterate over pulses once to obtain global time offset
     if (add_t_first){
@@ -162,7 +163,7 @@ inline void fill_reduced_summary_statistics_data(
             }
         }
 
-        T global_offset_time = acc_total.mean();
+        global_offset_time = acc_total.mean();
     }
 
     // now iterate over DOMs and pulses to fill data_dict
