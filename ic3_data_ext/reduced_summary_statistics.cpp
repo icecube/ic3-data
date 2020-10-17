@@ -166,20 +166,8 @@ inline void fill_reduced_summary_statistics_data(
         container.attr("global_time_offset_batch"));
 
     // x_dom, x_dom_exclusions, x_ic78, x_ic78_exclusions, x_deepcore
-    // and x_deepcore_exclusions depend on is_str_dom_format
-    // Therefore we will get them further below
-    // bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
-    //     container.attr("x_dom"));
-    // bn::ndarray x_dom_exclusions = boost::python::extract<bn::ndarray>(
-    //     container.attr("x_dom_exclusions"));
-    // bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
-    //     container.attr("x_ic78"));
-    // bn::ndarray x_ic78_exclusions = boost::python::extract<bn::ndarray>(
-    //     container.attr("x_ic78_exclusions"));
-    // bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
-    //     container.attr("x_deepcore"));
-    // bn::ndarray x_deepcore_exclusions = boost::python::extract<bn::ndarray>(
-    //     container.attr("x_deepcore_exclusions"));
+    // and x_deepcore_exclusions depend on is_str_dom_format and do not
+    // always exist. Therefore we will get them further below when needed
     // -------------------------------------------------------------
 
     // create a dict for the output data
@@ -210,10 +198,8 @@ inline void fill_reduced_summary_statistics_data(
 
         // get om_key for conenience
         const OMKey om_key = dom_pulses.first;
-        const int om_num = dom_pulses.first.GetOM() - 1;
-        const int string_num = dom_pulses.first.GetString() - 1;
-        const int hex_a = STRING_TO_HEX_A[string_num];
-        const int hex_b = STRING_TO_HEX_B[string_num];
+        const int om_num = om_key.GetOM() - 1;
+        const int string_num = om_key.GetString() - 1;
 
         // create and initialize variables
         T dom_charge_sum = 0.0;
@@ -301,6 +287,9 @@ inline void fill_reduced_summary_statistics_data(
                     // Get reference to data field
                     bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
                         container.attr("x_ic78"));
+
+                    const int hex_a = STRING_TO_HEX_A[string_num];
+                    const int hex_b = STRING_TO_HEX_B[string_num];
 
                     // Center of Detector is hex_a, hex_b = 0, 0
                     // hex_a goes from -4 to 5
