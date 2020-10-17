@@ -143,7 +143,7 @@ inline void fill_reduced_summary_statistics_data(
     I3Double& global_time_offset = boost::python::extract<I3Double&>(
         container.attr("global_time_offset"));
 
-    bn::ndarray& global_time_offset_batch = boost::python::extract<bn::ndarray&>(
+    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
         container.attr("global_time_offset_batch"));
 
     // if (is_str_dom_format){
