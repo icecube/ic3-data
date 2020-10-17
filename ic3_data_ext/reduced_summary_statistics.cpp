@@ -267,12 +267,12 @@ inline void fill_reduced_summary_statistics_data(
         for (int i=0; i < bin_indices_list.size(); i++){
             if (is_str_dom_format){
 
-                // // Get reference to data field
-                // bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
-                //     container.attr("x_dom"));
+                // Get reference to data field
+                bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+                    container.attr("x_dom"));
 
-                // x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
-                //     = bin_values_list[i];
+                x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
+                    = bin_values_list[i];
 
             }else{
 
