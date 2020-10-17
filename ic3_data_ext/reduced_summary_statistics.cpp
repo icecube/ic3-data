@@ -151,10 +151,13 @@ inline void fill_reduced_summary_statistics_data(
         container.attr("config")["is_str_dom_format"]);
 
     // create variables for the output data
-    std::vector<OMKey> om_keys;
-    std::vector<I3VectorInt> bin_indices;
-    std::vector<I3VectorInt> bin_exclusions;
-    std::vector<I3VectorDouble> bin_values;
+    const int num_hit_doms = pulse_map.size();
+
+    int vector_counter = 0;
+    std::vector<OMKey> om_keys(num_hit_doms);
+    std::vector<I3VectorInt> bin_indices(num_hit_doms);
+    std::vector<I3VectorInt> bin_exclusions(num_hit_doms);
+    std::vector<I3VectorDouble> bin_values(num_hit_doms);
     T global_offset_time = 0;
 
     // Iterate over pulses once to obtain global time offset
@@ -241,10 +244,11 @@ inline void fill_reduced_summary_statistics_data(
         }
 
         // collect lists for DOM
-        // om_keys.push_back(om_key);
-        // bin_indices.push_back(bin_indices_list);
-        // bin_exclusions.push_back(bin_exclusions_list);
-        // bin_values.push_back(bin_values_list);
+        om_keys[vector_counter] = om_key;
+        bin_indices[vector_counter] = bin_indices_list;
+        bin_exclusions[vector_counter] = bin_exclusions_list;
+        bin_values[vector_counter] = bin_values_list;
+        vector_counter += 1;
 
         // add data values
         for (int i=0; i < bin_indices_list.size(); i++){
