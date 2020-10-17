@@ -152,7 +152,7 @@ https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boos
  Functions with pybinding for python-based usage
 ******************************************************/
 template <typename T>
-static boost::python::tuple get_reduced_summary_statistics_data(
+static void get_reduced_summary_statistics_data(
                                   const boost::python::object& pulse_map_obj,
                                   const bool add_total_charge,
                                   const bool add_t_first,
@@ -239,7 +239,7 @@ static boost::python::tuple get_reduced_summary_statistics_data(
                 bin_values_list, bin_indices_list, bin_exclusions_list);
     }
 
-    return  boost::python::make_tuple(global_offset_time, data_dict);
+    // return  boost::python::make_tuple(global_offset_time, data_dict);
 }
 
 template <typename T>
