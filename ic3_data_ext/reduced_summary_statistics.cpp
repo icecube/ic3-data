@@ -146,18 +146,16 @@ inline void fill_reduced_summary_statistics_data(
     bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
         container.attr("global_time_offset_batch"));
 
-    global_time_offset_batch[0] += 32;
-
-    // if (is_str_dom_format){
-    //     bn::ndarray& x_dom = container.attr("x_dom");
-    //     bn::ndarray& x_dom_exclusions = container.attr("x_dom_exclusions");
-    // }else{
-    //     bn::ndarray& x_ic78 = container.attr("x_ic78");
-    //     bn::ndarray& x_ic78_exclusions = container.attr("x_ic78_exclusions");
-    //     bn::ndarray& x_deepcore = container.attr("x_deepcore");
-    //     bn::ndarray& x_deepcore_exclusions =
-    //         container.attr("x_deepcore_exclusions");
-    // }
+    if (is_str_dom_format){
+        bn::ndarray x_dom = container.attr("x_dom");
+        bn::ndarray x_dom_exclusions = container.attr("x_dom_exclusions");
+    }else{
+        bn::ndarray x_ic78 = container.attr("x_ic78");
+        bn::ndarray x_ic78_exclusions = container.attr("x_ic78_exclusions");
+        bn::ndarray x_deepcore = container.attr("x_deepcore");
+        bn::ndarray x_deepcore_exclusions =
+            container.attr("x_deepcore_exclusions");
+    }
     // -------------------------------------------------------------
 
     // create a dict for the output data
