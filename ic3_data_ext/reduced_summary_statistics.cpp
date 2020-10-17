@@ -175,6 +175,7 @@ inline void fill_reduced_summary_statistics_data(
             }
         }
         global_time_offset = acc_total.mean();
+        global_time_offset_batch[batch_index] = global_time_offset.value;
     }
 
     // now iterate over DOMs and pulses to fill data_dict
@@ -219,7 +220,7 @@ inline void fill_reduced_summary_statistics_data(
         if (add_t_first){
             bin_indices_list.append(counter);
             bin_values_list.append(
-                dom_pulses.second[0].GetTime() - global_time_offset);
+                dom_pulses.second[0].GetTime() - global_time_offset.value);
             counter += 1;
         }
 
