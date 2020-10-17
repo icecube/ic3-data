@@ -150,7 +150,7 @@ inline void fill_reduced_summary_statistics_data(
     const bool is_str_dom_format =  boost::python::extract<bool>(
         container.attr("config")["is_str_dom_format"]);
 
-    // create a dict for the output data
+    // create a map for the output data
     boost::python::dict data_dict;
     T global_offset_time = 0;
 
@@ -205,9 +205,9 @@ inline void fill_reduced_summary_statistics_data(
         // Collect values and update data fields
         // -------------------------------------
         int counter = 0;
-        std::vector<int> bin_exclusions_list; // empty dummy exclusions
-        std::vector<int> bin_indices_list;
-        std::vector<double> bin_values_list;
+        I3VectorInt bin_exclusions_list; // empty dummy exclusions
+        I3VectorInt bin_indices_list;
+        I3VectorDouble bin_values_list;
 
         // Total DOM charge
         if (add_total_charge){
