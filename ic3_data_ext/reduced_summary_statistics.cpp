@@ -4,8 +4,11 @@
 #define REDUCED_SUMMARY_STATISTICS_CPP
 
 #include "icetray/I3Frame.h"
+#include "icetray/OMKey.h"
 #include "dataclasses/physics/I3RecoPulse.h"
 #include "dataclasses/I3Map.h"
+#include "dataclasses/I3Double.h"
+#include "dataclasses/I3Vector.h"
 
 // include necessary boost headers
 #include <boost/python.hpp>
@@ -130,6 +133,17 @@ inline void fill_reduced_summary_statistics_data(
 
     // create references to the data fields that need to be modified
 
+    I3MapKeyVectorInt& bin_indices = container.attr("bin_indices");
+    I3MapKeyVectorInt& bin_exclusions = container.attr("bin_exclusions");
+    I3MapKeyVectorDouble& bin_values = container.attr("bin_values");
+    I3Double& global_time_offset = container.attr("global_time_offset");
+
+    if (is_str_dom_format){
+        // auto np_x_dom =
+        // .get_dtype()
+        // x_dom =
+        // x_dom_exclusions =
+    }
 
     // create a dict for the output data
     boost::python::dict data_dict;
