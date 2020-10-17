@@ -900,6 +900,9 @@ BOOST_PYTHON_MODULE(ext_boost)
     boost::python::def("get_reduced_summary_statistics_data",
                        &get_reduced_summary_statistics_data<double>);
 
+    boost::python::def("fill_reduced_summary_statistics_data",
+                       &fill_reduced_summary_statistics_data<double>);
+
     boost::python::def("get_cascade_classification_data",
                        &get_cascade_classification_data<double>);
 
