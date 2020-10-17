@@ -212,9 +212,9 @@ inline void fill_reduced_summary_statistics_data(
         // Collect values and update data fields
         // -------------------------------------
         int counter = 0;
-        vector<int> bin_exclusions_list; // empty dummy exclusions
-        vector<int> bin_indices_list;
-        vector<double> bin_values_list;
+        std::vector<int> bin_exclusions_list; // empty dummy exclusions
+        std::vector<int> bin_indices_list;
+        std::vector<double> bin_values_list;
 
         // Total DOM charge
         if (add_total_charge){
