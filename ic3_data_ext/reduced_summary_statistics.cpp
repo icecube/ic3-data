@@ -11,7 +11,7 @@
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
 
-#include "utils.hpp"
+#include "utils.cpp"
 
 namespace bn = boost::python::numpy;
 
