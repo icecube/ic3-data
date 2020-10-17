@@ -832,12 +832,12 @@ static boost::python::list  get_charge_input_data3(
 }
 
 static bn::ndarray  get_charge_input_data4(
-            boost::python::object frame_obj,
+            const boost::python::object frame_obj,
             const boost::python::object pulse_key_obj
         ) {
 
     // extract c++ data types from python objects
-    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
     const std::string pulse_key =
         boost::python::extract<std::string>(pulse_key_obj);
 
@@ -862,8 +862,8 @@ static bn::ndarray  get_charge_input_data4(
     // loop over pulses and accumulate charge
     for (auto const& dom_pulses : pulse_map){
 
-        int om_num = dom_pulses.first.GetOM() - 1;
-        int string_num = dom_pulses.first.GetString() - 1;
+        const int om_num = dom_pulses.first.GetOM() - 1;
+        const int string_num = dom_pulses.first.GetString() - 1;
 
         if (om_num < n_doms){
             for (auto const& pulse : dom_pulses.second){
@@ -885,13 +885,13 @@ static bn::ndarray  get_charge_input_data4(
 }
 
 static void fill_charge_input_data(
-            boost::python::object frame_obj,
+            const boost::python::object frame_obj,
             boost::python::numpy::ndarray input,
             const boost::python::object pulse_key_obj
         ) {
 
     // extract c++ data types from python objects
-    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
     const std::string pulse_key =
         boost::python::extract<std::string>(pulse_key_obj);
 
@@ -916,10 +916,10 @@ static void fill_charge_input_data(
     // loop over pulses and accumulate charge
     for (auto const& dom_pulses : pulse_map){
 
-        int bin_index = 0;
-        int om_num = dom_pulses.first.GetOM() - 1;
-        int string_num = dom_pulses.first.GetString() - 1;
-        int offset = 60*n_bins*string_num + n_bins*om_num + bin_index;
+        const int bin_index = 0;
+        const int om_num = dom_pulses.first.GetOM() - 1;
+        const int string_num = dom_pulses.first.GetString() - 1;
+        const int offset = 60*n_bins*string_num + n_bins*om_num + bin_index;
 
         if (om_num < 60){
             for (auto const& pulse : dom_pulses.second){
