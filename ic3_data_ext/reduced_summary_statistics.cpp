@@ -298,6 +298,18 @@ inline void fill_reduced_summary_statistics_data(
         // -------------------------------------
     }
 
+}
+
+template <typename T>
+inline void fill_container__str_dom_format(
+                                  boost::python::object container,
+                                  const boost::python::object pulse_map_obj,
+                                  const bool add_total_charge,
+                                  const bool add_t_first,
+                                  const bool add_t_std,
+                                  const int batch_index
+                                ) {
+
     // -------------------------------------------------------------
     // create references to the data fields that need to be modified
     // -------------------------------------------------------------
@@ -321,7 +333,6 @@ inline void fill_reduced_summary_statistics_data(
     // set global time offset values
     global_time_offset = global_offset_time;
     global_time_offset_batch[batch_index] = global_time_offset.value;
-
 }
 
 #endif
