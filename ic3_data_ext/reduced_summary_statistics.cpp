@@ -151,10 +151,10 @@ inline void fill_reduced_summary_statistics_data(
         container.attr("config")["is_str_dom_format"]);
 
     // create variables for the output data
-    boost::python::dict data_dict;
-    I3MapKeyVectorInt bin_indices;
-    I3MapKeyVectorInt bin_exclusions;
-    I3MapKeyVectorDouble bin_values;
+    std::vector<OMKey> om_keys;
+    std::vector<I3VectorInt> bin_indices;
+    std::vector<I3VectorInt> bin_exclusions;
+    std::vector<I3VectorDouble> bin_values;
     T global_offset_time = 0;
 
     // Iterate over pulses once to obtain global time offset
@@ -241,9 +241,10 @@ inline void fill_reduced_summary_statistics_data(
         }
 
         // collect lists for DOM
-        bin_indices[om_key] = bin_indices_list;
-        bin_exclusions[om_key] = bin_exclusions_list;
-        bin_values[om_key] = bin_values_list;
+        om_keys.push_back(om_key);
+        bin_indices.push_back(bin_indices_list);
+        bin_exclusions.push_back(bin_exclusions_list);
+        bin_values.push_back(bin_values_list);
 
         // add data values
         for (int i=0; i < bin_indices_list.size(); i++){
