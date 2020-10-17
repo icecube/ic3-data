@@ -123,6 +123,13 @@ inline void fill_reduced_summary_statistics_data(
     // Get pulse map
     I3RecoPulseSeriesMap& pulse_map = boost::python::extract<I3RecoPulseSeriesMap&>(pulse_map_obj);
 
+    // collect settings of container
+    const bool is_str_dom_format =  boost::python::extract<bool>(
+        container.attr("config")["is_str_dom_format"]);
+
+    // create references to the data fields that need to be modified
+
+
     // create a dict for the output data
     boost::python::dict data_dict;
     T global_offset_time = 0.;
