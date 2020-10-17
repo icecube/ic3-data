@@ -165,19 +165,28 @@ inline void fill_reduced_summary_statistics_data(
     bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
         container.attr("global_time_offset_batch"));
 
+    // define numpy arrays
+    bn::ndarray x_dom;
+    bn::ndarray x_dom_exclusions;
+    bn::ndarray x_ic78;
+    bn::ndarray x_ic78_exclusions;
+    bn::ndarray x_deepcore;
+    bn::ndarray x_deepcore_exclusions;
+
+    // assign references
     if (is_str_dom_format){
-        bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+        x_dom = boost::python::extract<bn::ndarray>(
             container.attr("x_dom"));
-        bn::ndarray x_dom_exclusions = boost::python::extract<bn::ndarray>(
+        x_dom_exclusions = boost::python::extract<bn::ndarray>(
             container.attr("x_dom_exclusions"));
     }else{
-        bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
+        x_ic78 = boost::python::extract<bn::ndarray>(
             container.attr("x_ic78"));
-        bn::ndarray x_ic78_exclusions = boost::python::extract<bn::ndarray>(
+        x_ic78_exclusions = boost::python::extract<bn::ndarray>(
             container.attr("x_ic78_exclusions"));
-        bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
+        x_deepcore = boost::python::extract<bn::ndarray>(
             container.attr("x_deepcore"));
-        bn::ndarray x_deepcore_exclusions = boost::python::extract<bn::ndarray>(
+        x_deepcore_exclusions = boost::python::extract<bn::ndarray>(
             container.attr("x_deepcore_exclusions"));
     }
     // -------------------------------------------------------------
