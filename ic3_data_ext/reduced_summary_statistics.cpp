@@ -139,7 +139,7 @@ inline void fill_reduced_summary_statistics_data(
         container.attr("bin_exclusions"));
     I3MapKeyVectorDouble& bin_values = boost::python::extract<I3MapKeyVectorDouble&>(
         container.attr("bin_values"));
-    I3Double& bin_values = boost::python::extract<I3Double&>(
+    I3Double& global_time_offset = boost::python::extract<I3Double&>(
         container.attr("global_time_offset"));
 
     if (is_str_dom_format){
