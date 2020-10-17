@@ -18,7 +18,26 @@
 
 namespace bn = boost::python::numpy;
 
+// --------------------------------------------
+// Define Detector Constants for Hex-Conversion
+// --------------------------------------------
+const int STRING_TO_HEX_A[78] = {
+    -4, -4, -4, -4, -4, -4, -3, -3, -3, -3, -3, -3, -3, -2, -2, -2, -2,
+    -2, -2, -2, -2, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,
+    2,  2,  2,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,  3,  4,
+    4,  4,  4,  4,  4,  4,  5,  5,  5,  5
+}
+const int STRING_TO_HEX_B[78] = {
+    -1,  0,  1,  2,  3,  4, -2, -1,  0,  1,  2,  3,  4, -3, -2, -1,  0,
+    1,  2,  3,  4, -4, -3, -2, -1,  0,  1,  2,  3,  4, -5, -4, -3, -2,
+    -1,  0,  1,  2,  3,  4, -5, -4, -3, -2, -1,  0,  1,  2,  3,  4, -5,
+    -4, -3, -2, -1,  0,  1,  2,  3, -5, -4, -3, -2, -1,  0,  1,  2, -5,
+    -4, -3, -2, -1,  0,  1, -5, -4, -3, -2
+}
 
+
+// -------------------------------
 // Reduced Summary Statistics Data
 // -------------------------------
 
@@ -191,6 +210,10 @@ inline void fill_reduced_summary_statistics_data(
 
         // get om_key for conenience
         const OMKey om_key = dom_pulses.first;
+        const int om_num = dom_pulses.first.GetOM() - 1;
+        const int string_num = dom_pulses.first.GetString() - 1;
+        const int hex_a = STRING_TO_HEX_A[string_num];
+        const int hex_b = STRING_TO_HEX_B[string_num];
 
         // create and initialize variables
         T dom_charge_sum = 0.0;
@@ -248,6 +271,39 @@ inline void fill_reduced_summary_statistics_data(
         bin_indices[om_key] = bin_indices_list;
         bin_exclusions[om_key] = bin_exclusions_list;
         bin_values[om_key] = bin_values_list;
+
+        // add data values
+        for (int i=0; i < bin_indices_list.size(); i++){
+            if (is_str_dom_format){
+                x_dom[batch_index, string_num, om_num,
+                    bin_indices_list[i]] = bin_values_list[i];
+
+            }else{
+
+                // DeepCore
+                if (string_num >= 78){
+                    x_deepcore[batch_index, string_num - 78, om_num,
+                        bin_indices_list[i]] = bin_values_list[i];
+
+                // Main Array (Hex-Structure)
+                }else{
+                    // Center of Detector is hex_a, hex_b = 0, 0
+                    // hex_a goes from -4 to 5
+                    // hex_b goes from -5 to 4
+                    x_ic78[batch_index, hex_a + 4, hex_b + 5, om_num,
+                        bin_indices_list[i]] = bin_values_list[i];
+                }
+
+            }
+        }
+
+        // Normally we would have to add exclusions for:
+        // x_dom_exclusions
+        // x_ic78_exclusions
+        // x_deepcore_exclusions
+        // But for this data metho, there are no exclusions,
+        // so we can skip this
+
         // -------------------------------------
     }
 }
