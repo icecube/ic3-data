@@ -165,18 +165,21 @@ inline void fill_reduced_summary_statistics_data(
     bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
         container.attr("global_time_offset_batch"));
 
-    bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
-        container.attr("x_dom"));
-    bn::ndarray x_dom_exclusions = boost::python::extract<bn::ndarray>(
-        container.attr("x_dom_exclusions"));
-    bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
-        container.attr("x_ic78"));
-    bn::ndarray x_ic78_exclusions = boost::python::extract<bn::ndarray>(
-        container.attr("x_ic78_exclusions"));
-    bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
-        container.attr("x_deepcore"));
-    bn::ndarray x_deepcore_exclusions = boost::python::extract<bn::ndarray>(
-        container.attr("x_deepcore_exclusions"));
+    // x_dom, x_dom_exclusions, x_ic78, x_ic78_exclusions, x_deepcore
+    // and x_deepcore_exclusions depend on is_str_dom_format
+    // Therefore we will get them further below
+    // bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+    //     container.attr("x_dom"));
+    // bn::ndarray x_dom_exclusions = boost::python::extract<bn::ndarray>(
+    //     container.attr("x_dom_exclusions"));
+    // bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
+    //     container.attr("x_ic78"));
+    // bn::ndarray x_ic78_exclusions = boost::python::extract<bn::ndarray>(
+    //     container.attr("x_ic78_exclusions"));
+    // bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
+    //     container.attr("x_deepcore"));
+    // bn::ndarray x_deepcore_exclusions = boost::python::extract<bn::ndarray>(
+    //     container.attr("x_deepcore_exclusions"));
     // -------------------------------------------------------------
 
     // create a dict for the output data
@@ -272,6 +275,11 @@ inline void fill_reduced_summary_statistics_data(
         // add data values
         for (int i=0; i < bin_indices_list.size(); i++){
             if (is_str_dom_format){
+
+                // Get reference to data field
+                bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+                    container.attr("x_dom"));
+
                 x_dom[batch_index, string_num, om_num,
                     bin_indices_list[i]] = bin_values_list[i];
 
@@ -279,11 +287,21 @@ inline void fill_reduced_summary_statistics_data(
 
                 // DeepCore
                 if (string_num >= 78){
+
+                    // Get reference to data field
+                    bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
+                        container.attr("x_deepcore"));
+
                     x_deepcore[batch_index, string_num - 78, om_num,
                         bin_indices_list[i]] = bin_values_list[i];
 
                 // Main Array (Hex-Structure)
                 }else{
+
+                    // Get reference to data field
+                    bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
+                        container.attr("x_ic78"));
+
                     // Center of Detector is hex_a, hex_b = 0, 0
                     // hex_a goes from -4 to 5
                     // hex_b goes from -5 to 4
