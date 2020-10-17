@@ -265,6 +265,8 @@ inline void fill_reduced_summary_statistics_data(
                 // Get reference to data field
                 bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
                     container.attr("x_dom"));
+                std::cout << "i: " << i << std::endl;
+                std::cout << "x_dom:\n" << p::extract<char const *>(p::str(x_dom.get_shape())) << std::endl;
 
                 x_dom[batch_index, string_num, om_num,
                     bin_indices_list[i]] = bin_values_list[i];
