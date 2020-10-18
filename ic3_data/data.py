@@ -159,7 +159,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # ------------------------------------------------
         # Calculate DNN input data seperately for each DOM
         # ------------------------------------------------
-        if self._calculation_method = 'calculate_per_dom':
+        if self._calculation_method == 'calculate_per_dom':
             # restructure pulses
             # charges, times, dom_times_dict, dom_charges_dict = \
             #     self.restructure_pulses(pulses)
@@ -223,7 +223,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # ---------------------------------------------------
         # Calculate DNN input data for whole detector at once
         # ---------------------------------------------------
-        elif self._calculation_method = 'calculate_for_detector':
+        elif self._calculation_method == 'calculate_for_detector':
 
             global_time_offset, data_dict = self._data_format_func(
                                     frame=frame,
@@ -249,7 +249,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # --------------------------------
         # Directly fill DNN Data Container
         # --------------------------------
-        elif self._calculation_method = 'fill_container':
+        elif self._calculation_method == 'fill_container':
 
             # fill the data container
             self._data_format_func(
