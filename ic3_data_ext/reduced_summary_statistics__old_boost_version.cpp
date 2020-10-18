@@ -110,7 +110,7 @@ inline void update_str_dom_data_fields(
     // }
 
     // get a pointer to the input data
-    double* x_dom_ptr = reinterpret_cast<double*>(x_dom.data());
+    double* x_dom_ptr = reinterpret_cast<double*>(x_dom);
 
     // compute helper variables for offset calculation
     const int n_strings = 86;
@@ -166,8 +166,8 @@ inline void update_hex_data_fields(
     // }
 
     // get a pointer to the input data
-    double* x_deepcore_ptr = reinterpret_cast<double*>(x_deepcore.data());
-    double* x_ic78_ptr = reinterpret_cast<double*>(x_ic78.data());
+    double* x_deepcore_ptr = reinterpret_cast<double*>(x_deepcore);
+    double* x_ic78_ptr = reinterpret_cast<double*>(x_ic78);
 
     // compute helper variables for offset calculation
     const int n_bins =  boost::python::extract<int>(
