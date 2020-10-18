@@ -102,7 +102,7 @@ inline void update_str_dom_data_fields(
         container.attr("x_dom"));
 
     // get a pointer to the input data
-    double* x_dom_ptr = reinterpret_cast<double*>(input.get_data());
+    double* x_dom_ptr = reinterpret_cast<double*>(x_dom.get_data());
 
     const int n_strings = 86;
     const int n_doms = 60;
