@@ -58,6 +58,37 @@ inline void update_time_offset(
     global_time_offset_batch[batch_index] = global_time_offset.value;
 }
 
+inline void update_i3_map_data_fields(
+                              boost::python::object container,
+                              const std::vector<OMKey>& om_keys,
+                              const std::vector<I3VectorInt>& bin_indices,
+                              const std::vector<I3VectorInt>& bin_exclusions,
+                              const std::vector<I3VectorDouble>& bin_values
+                            ) {
+
+    // create references to the data fields that need to be modified
+    I3MapKeyVectorInt& bin_indices_map = boost::python::extract<I3MapKeyVectorInt&>(
+        container.attr("bin_indices"));
+    I3MapKeyVectorInt& bin_exclusions_map = boost::python::extract<I3MapKeyVectorInt&>(
+        container.attr("bin_exclusions"));
+    I3MapKeyVectorDouble& bin_values_map = boost::python::extract<I3MapKeyVectorDouble&>(
+        container.attr("bin_values"));
+
+    for (int i = 0; i < om_keys.size(); i++){
+
+        // get om_key
+        const OMKey om_key = om_keys[i];
+
+        // assign values to map
+        bin_indices_map[om_key] = bin_indices[i];
+        bin_values_map[om_key] = bin_values[i];
+
+        if (bin_exclusions[i].size() > 0){
+            bin_exclusions_map[om_key] = bin_exclusions[i];
+        }
+    }
+}
+
 
 // -------------------------------
 // Reduced Summary Statistics Data
@@ -334,6 +365,10 @@ inline void fill_reduced_summary_statistics_data(
 
     // update global offset time
     update_time_offset<T>(container, global_offset_time, batch_index);
+
+    // udate I3Map data fields if results are to be written to the frame
+    update_i3_map_data_fields(
+        container, om_keys, bin_indices, bin_exclusions, bin_values);
 
 }
 
