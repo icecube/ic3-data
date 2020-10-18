@@ -156,10 +156,10 @@ inline void fill_reduced_summary_statistics_data(
     T global_offset_time = 0;
 
     int vector_counter = 0;
-    std::vector<OMKey&> om_keys(num_hit_doms);
-    std::vector<I3VectorInt&> bin_indices(num_hit_doms);
-    std::vector<I3VectorInt&> bin_exclusions(num_hit_doms);
-    std::vector<I3VectorDouble&> bin_values(num_hit_doms);
+    std::vector<OMKey> om_keys(num_hit_doms);
+    std::vector<I3VectorInt> bin_indices(num_hit_doms);
+    std::vector<I3VectorInt> bin_exclusions(num_hit_doms);
+    std::vector<I3VectorDouble> bin_values(num_hit_doms);
 
     // Iterate over pulses once to obtain global time offset
     if (add_t_first){
@@ -251,7 +251,7 @@ inline void fill_reduced_summary_statistics_data(
         bin_values[vector_counter] = bin_values_list;
         vector_counter += 1;
 
-        // add data values
+        /*// add data values
         for (int i=0; i < bin_indices_list.size(); i++){
             if (is_str_dom_format){
 
@@ -299,11 +299,38 @@ inline void fill_reduced_summary_statistics_data(
         // x_ic78_exclusions
         // x_deepcore_exclusions
         // But for this data metho, there are no exclusions,
-        // so we can skip this
+        // so we can skip this*/
 
         // -------------------------------------
     }
 
+    // om_keys
+    // bin_indices
+    // bin_exclusions
+    // bin_values
+    // global_offset_time
+
+    // update global offset time
+    update_time_offset<T>(container, global_offset_time, batch_index);
+
+}
+
+template <typename T>
+inline void update_time_offset(
+                              boost::python::object container,
+                              const T global_offset_time,
+                              const int batch_index
+                            ) {
+
+    // create references to the data fields that need to be modified
+    I3Double& global_time_offset = boost::python::extract<I3Double&>(
+        container.attr("global_time_offset"));
+    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
+        container.attr("global_time_offset_batch"));
+
+    // update fields
+    global_time_offset = global_offset_time;
+    global_time_offset_batch[batch_index] = global_time_offset.value;
 }
 
 // template <typename T>
@@ -339,6 +366,59 @@ inline void fill_reduced_summary_statistics_data(
 //     // set global time offset values
 //     global_time_offset = global_offset_time;
 //     global_time_offset_batch[batch_index] = global_time_offset.value;
+
+//     for (int counter = 0; counter < bin_indices.size(); counter++){
+//         // add data values
+//         for (int i=0; i < bin_indices_list.size(); i++){
+//             if (is_str_dom_format){
+
+//                 // // Get reference to data field
+//                 // bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+//                 //     container.attr("x_dom"));
+
+//                 // x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
+//                 //     = bin_values_list[i];
+
+//             }else{
+
+//                 // DeepCore
+//                 if (string_num >= 78){
+
+//                     // Get reference to data field
+//                     bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
+//                         container.attr("x_deepcore"));
+
+//                     x_deepcore[batch_index][string_num - 78][om_num]
+//                         [bin_indices_list[i]] = bin_values_list[i];
+
+//                 // Main Array (Hex-Structure)
+//                 }else{
+
+//                     // Get reference to data field
+//                     bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
+//                         container.attr("x_ic78"));
+
+//                     const int hex_a = STRING_TO_HEX_A[string_num];
+//                     const int hex_b = STRING_TO_HEX_B[string_num];
+
+//                     // Center of Detector is hex_a, hex_b = 0, 0
+//                     // hex_a goes from -4 to 5
+//                     // hex_b goes from -5 to 4
+//                     x_ic78[batch_index][hex_a + 4][hex_b + 5][om_num]
+//                         [bin_indices_list[i]] = bin_values_list[i];
+//                 }
+
+//             }
+//         }
+
+//         // Normally we would have to add exclusions for:
+//         // x_dom_exclusions
+//         // x_ic78_exclusions
+//         // x_deepcore_exclusions
+//         // But for this data metho, there are no exclusions,
+//         // so we can skip this
+//     }
+
 // }
 
 #endif
