@@ -110,7 +110,7 @@ inline void update_str_dom_data_fields(
     // }
 
     // get a pointer to the input data
-    double* x_dom_ptr = reinterpret_cast<double*>(x_dom.getflat());
+    // double* x_dom_ptr = reinterpret_cast<double*>(x_dom.getflat());
 
     // compute helper variables for offset calculation
     const int n_strings = 86;
@@ -134,11 +134,12 @@ inline void update_str_dom_data_fields(
 
         // add data values
         for (int i=0; i < bin_indices_list.size(); i++){
-            // x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
-            //     = bin_values_list[i];
+            x_dom[boost::python::make_tuple(
+                batch_index, string_num, om_num, bin_indices_list[i])]
+                = bin_values_list[i];
 
-            int offset = dom_offset + bin_indices_list[i];
-            x_dom_ptr[offset] = bin_values_list[i];
+            // int offset = dom_offset + bin_indices_list[i];
+            // x_dom_ptr[offset] = bin_values_list[i];
         }
     }
 }
