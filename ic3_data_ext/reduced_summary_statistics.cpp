@@ -193,6 +193,7 @@ inline void fill_reduced_summary_statistics_data(
                                   const bool add_total_charge,
                                   const bool add_t_first,
                                   const bool add_t_std,
+                                  const bool write_to_frame,
                                   const int batch_index
                                 ) {
 
@@ -367,8 +368,10 @@ inline void fill_reduced_summary_statistics_data(
     update_time_offset<T>(container, global_offset_time, batch_index);
 
     // udate I3Map data fields if results are to be written to the frame
-    update_i3_map_data_fields(
-        container, om_keys, bin_indices, bin_exclusions, bin_values);
+    if (write_to_frame){
+        update_i3_map_data_fields(
+            container, om_keys, bin_indices, bin_exclusions, bin_values);
+    }
 
 }
 
