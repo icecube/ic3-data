@@ -37,6 +37,28 @@ const int STRING_TO_HEX_B[78] = {
 };
 
 
+// -------------------------------------------
+// Helper Functions to update Container Fields
+// -------------------------------------------
+template <typename T>
+inline void update_time_offset(
+                              boost::python::object container,
+                              const T global_offset_time,
+                              const int batch_index
+                            ) {
+
+    // create references to the data fields that need to be modified
+    I3Double& global_time_offset = boost::python::extract<I3Double&>(
+        container.attr("global_time_offset"));
+    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
+        container.attr("global_time_offset_batch"));
+
+    // update fields
+    global_time_offset = global_offset_time;
+    global_time_offset_batch[batch_index] = global_time_offset.value;
+}
+
+
 // -------------------------------
 // Reduced Summary Statistics Data
 // -------------------------------
@@ -315,23 +337,6 @@ inline void fill_reduced_summary_statistics_data(
 
 }
 
-template <typename T>
-inline void update_time_offset(
-                              boost::python::object container,
-                              const T global_offset_time,
-                              const int batch_index
-                            ) {
-
-    // create references to the data fields that need to be modified
-    I3Double& global_time_offset = boost::python::extract<I3Double&>(
-        container.attr("global_time_offset"));
-    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
-        container.attr("global_time_offset_batch"));
-
-    // update fields
-    global_time_offset = global_offset_time;
-    global_time_offset_batch[batch_index] = global_time_offset.value;
-}
 
 // template <typename T>
 // inline void fill_container__str_dom_format(
