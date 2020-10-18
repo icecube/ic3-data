@@ -107,15 +107,15 @@ inline void update_str_dom_data_fields(
         log_fatal("Numpy array x_dom in container is not np.float64!");
     }
 
-    // get a pointer to the input data
-    double* x_dom_ptr = reinterpret_cast<double*>(x_dom.get_data());
+    // // get a pointer to the input data
+    // double* x_dom_ptr = reinterpret_cast<double*>(x_dom.get_data());
 
-    // compute helper variables for offset calculation
-    const int n_strings = 86;
-    const int n_doms = 60;
-    const int n_bins =  boost::python::extract<int>(
-        container.attr("config")["num_bins"]);
-    const int batch_offset = n_strings*n_doms*n_bins*batch_index;
+    // // compute helper variables for offset calculation
+    // const int n_strings = 86;
+    // const int n_doms = 60;
+    // const int n_bins =  boost::python::extract<int>(
+    //     container.attr("config")["num_bins"]);
+    // const int batch_offset = n_strings*n_doms*n_bins*batch_index;
 
     for (int counter = 0; counter < om_keys.size(); counter++){
 
@@ -128,15 +128,16 @@ inline void update_str_dom_data_fields(
         const int om_num = om_key.GetOM() - 1;
         const int string_num = om_key.GetString() - 1;
 
-        const int dom_offset = batch_offset + n_doms*n_bins*string_num + n_bins*om_num;
+        // const int dom_offset = batch_offset + n_doms*n_bins*string_num + n_bins*om_num;
 
         // add data values
         for (int i=0; i < bin_indices_list.size(); i++){
-            // x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
-            //     = bin_values_list[i];
+            x_dom[boost::python::make_tuple(
+                batch_index, string_num, om_num, bin_indices_list[i])]
+                = bin_values_list[i];
 
-            int offset = dom_offset + bin_indices_list[i];
-            x_dom_ptr[offset] = bin_values_list[i];
+            // int offset = dom_offset + bin_indices_list[i];
+            // x_dom_ptr[offset] = bin_values_list[i];
         }
     }
 }
