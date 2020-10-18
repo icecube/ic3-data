@@ -27,6 +27,7 @@ See answers and discussion provided here:
 https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boostpython
 */
 #if BOOST_VERSION < 106500
+    #include <numpy/ndarrayobject.h>
     #include "numpy/npy_3kcompat.h"
     typedef typename boost::python::numeric::array pyndarray;
     namespace arrayFunc = boost::python::numeric;
@@ -69,7 +70,7 @@ inline void update_time_offset(
     // create references to the data fields that need to be modified
     I3Double& global_time_offset = boost::python::extract<I3Double&>(
         container.attr("global_time_offset"));
-    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
+    pyndarray global_time_offset_batch = boost::python::extract<pyndarray>(
         container.attr("global_time_offset_batch"));
 
     // update fields
@@ -117,7 +118,7 @@ inline void update_str_dom_data_fields(
                             ) {
 
     // create references to the data fields that need to be modified
-    bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+    pyndarray x_dom = boost::python::extract<pyndarray>(
         container.attr("x_dom"));
 
     // check data type of numpy arrays
@@ -168,9 +169,9 @@ inline void update_hex_data_fields(
                             ) {
 
     // create references to the data fields that need to be modified
-    bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
+    pyndarray x_deepcore = boost::python::extract<pyndarray>(
         container.attr("x_deepcore"));
-    bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
+    pyndarray x_ic78 = boost::python::extract<pyndarray>(
         container.attr("x_ic78"));
 
     // check data type of numpy arrays
