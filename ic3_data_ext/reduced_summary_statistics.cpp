@@ -12,12 +12,30 @@
 #include "dataclasses/I3Vector.h"
 
 // include necessary boost headers
+#include <boost/version.hpp> // for version info
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
 
 #include "utils.cpp"
 
-namespace bn = boost::python::numpy;
+/*
+Depending on the boost version, we need to use numpy differently.
+Prior to Boost 1.63 (BOOST_VERSION == 106300) numpy was not directly
+included in boost/python
+
+See answers and discussion provided here:
+https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boostpython
+*/
+#if BOOST_VERSION < 106500
+    #include "numpy/npy_3kcompat.h"
+    typedef typename boost::python::numeric::array pyndarray;
+    namespace arrayFunc = boost::python::numeric;
+#else
+    #include <boost/python/numpy.hpp>
+    typedef typename boost::python::numpy::ndarray pyndarray;
+    namespace arrayFunc = boost::python::numpy;
+    namespace bn = boost::python::numpy;
+#endif
 
 // --------------------------------------------
 // Define Detector Constants for Hex-Conversion
