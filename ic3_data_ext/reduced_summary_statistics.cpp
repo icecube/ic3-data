@@ -89,6 +89,88 @@ inline void update_i3_map_data_fields(
     }
 }
 
+inline void update_str_dom_data_fields(
+                              boost::python::object container,
+                              const int batch_index,
+                              const std::vector<OMKey>& om_keys,
+                              const std::vector<I3VectorInt>& bin_indices,
+                              const std::vector<I3VectorDouble>& bin_values
+                            ) {
+
+    // create references to the data fields that need to be modified
+    bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+        container.attr("x_dom"));
+
+    for (int counter = 0; counter < om_keys.size(); counter++){
+
+        // get data
+        const I3VectorInt bin_indices_list = bin_indices[counter];
+        const I3VectorDouble bin_values_list = bin_values[counter];
+
+        // get om_key
+        const OMKey om_key = om_keys[counter];
+        const int om_num = om_key.GetOM() - 1;
+        const int string_num = om_key.GetString() - 1;
+
+        // add data values
+        for (int i=0; i < bin_indices_list.size(); i++){
+            x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
+                = bin_values_list[i];
+        }
+    }
+}
+
+inline void update_hex_data_fields(
+                              boost::python::object container,
+                              const int batch_index,
+                              const std::vector<OMKey>& om_keys,
+                              const std::vector<I3VectorInt>& bin_indices,
+                              const std::vector<I3VectorDouble>& bin_values
+                            ) {
+
+    // create references to the data fields that need to be modified
+    bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
+        container.attr("x_deepcore"));
+    bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
+        container.attr("x_ic78"));
+
+    for (int counter = 0; counter < om_keys.size(); counter++){
+
+        // get data
+        const I3VectorInt bin_indices_list = bin_indices[counter];
+        const I3VectorDouble bin_values_list = bin_values[counter];
+
+        // get om_key
+        const OMKey om_key = om_keys[counter];
+        const int om_num = om_key.GetOM() - 1;
+        const int string_num = om_key.GetString() - 1;
+
+        // add data values
+        if (string_num >= 78){
+
+            // DeepCore
+            for (int i=0; i < bin_indices_list.size(); i++){
+                x_deepcore[batch_index][string_num - 78][om_num]
+                    [bin_indices_list[i]] = bin_values_list[i];
+            }
+
+        }else{
+
+            // Main Array (Hex-Structure)
+
+            // Center of Detector is hex_a, hex_b = 0, 0
+            // hex_a goes from -4 to 5
+            // hex_b goes from -5 to 4
+            const int hex_a = STRING_TO_HEX_A[string_num] + 4;
+            const int hex_b = STRING_TO_HEX_B[string_num] + 5;
+
+            for (int i=0; i < bin_indices_list.size(); i++){
+                x_ic78[batch_index][hex_a][hex_b][om_num]
+                    [bin_indices_list[i]] = bin_values_list[i];
+            }
+        }
+    }
+}
 
 // -------------------------------
 // Reduced Summary Statistics Data
@@ -358,12 +440,6 @@ inline void fill_reduced_summary_statistics_data(
         // -------------------------------------
     }
 
-    // om_keys
-    // bin_indices
-    // bin_exclusions
-    // bin_values
-    // global_offset_time
-
     // update global offset time
     update_time_offset<T>(container, global_offset_time, batch_index);
 
@@ -373,95 +449,21 @@ inline void fill_reduced_summary_statistics_data(
             container, om_keys, bin_indices, bin_exclusions, bin_values);
     }
 
+    // Update container data
+    if (is_str_dom_format){
+        update_str_dom_data_fields(
+            container, batch_index, om_keys, bin_indices, bin_values);
+    }else{
+        update_hex_data_fields(
+            container, batch_index, om_keys, bin_indices, bin_values);
+    }
+    // Normally we would have to add exclusions for:
+    // x_dom_exclusions
+    // x_ic78_exclusions
+    // x_deepcore_exclusions
+    // But for this data metho, there are no exclusions, so we can skip this
+
 }
 
-
-// template <typename T>
-// inline void fill_container__str_dom_format(
-//                                   boost::python::object container,
-//                                   const boost::python::object pulse_map_obj,
-//                                   const bool add_total_charge,
-//                                   const bool add_t_first,
-//                                   const bool add_t_std,
-//                                   const int batch_index
-//                                 ) {
-
-//     // -------------------------------------------------------------
-//     // create references to the data fields that need to be modified
-//     // -------------------------------------------------------------
-//     I3MapKeyVectorInt& bin_indices = boost::python::extract<I3MapKeyVectorInt&>(
-//         container.attr("bin_indices"));
-//     I3MapKeyVectorInt& bin_exclusions = boost::python::extract<I3MapKeyVectorInt&>(
-//         container.attr("bin_exclusions"));
-//     I3MapKeyVectorDouble& bin_values = boost::python::extract<I3MapKeyVectorDouble&>(
-//         container.attr("bin_values"));
-//     I3Double& global_time_offset = boost::python::extract<I3Double&>(
-//         container.attr("global_time_offset"));
-
-//     bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
-//         container.attr("global_time_offset_batch"));
-
-//     // x_dom, x_dom_exclusions, x_ic78, x_ic78_exclusions, x_deepcore
-//     // and x_deepcore_exclusions depend on is_str_dom_format and do not
-//     // always exist. Therefore we will get them further below when needed
-//     // -------------------------------------------------------------
-
-//     // set global time offset values
-//     global_time_offset = global_offset_time;
-//     global_time_offset_batch[batch_index] = global_time_offset.value;
-
-//     for (int counter = 0; counter < bin_indices.size(); counter++){
-//         // add data values
-//         for (int i=0; i < bin_indices_list.size(); i++){
-//             if (is_str_dom_format){
-
-//                 // // Get reference to data field
-//                 // bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
-//                 //     container.attr("x_dom"));
-
-//                 // x_dom[batch_index][string_num][om_num][bin_indices_list[i]]
-//                 //     = bin_values_list[i];
-
-//             }else{
-
-//                 // DeepCore
-//                 if (string_num >= 78){
-
-//                     // Get reference to data field
-//                     bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
-//                         container.attr("x_deepcore"));
-
-//                     x_deepcore[batch_index][string_num - 78][om_num]
-//                         [bin_indices_list[i]] = bin_values_list[i];
-
-//                 // Main Array (Hex-Structure)
-//                 }else{
-
-//                     // Get reference to data field
-//                     bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
-//                         container.attr("x_ic78"));
-
-//                     const int hex_a = STRING_TO_HEX_A[string_num];
-//                     const int hex_b = STRING_TO_HEX_B[string_num];
-
-//                     // Center of Detector is hex_a, hex_b = 0, 0
-//                     // hex_a goes from -4 to 5
-//                     // hex_b goes from -5 to 4
-//                     x_ic78[batch_index][hex_a + 4][hex_b + 5][om_num]
-//                         [bin_indices_list[i]] = bin_values_list[i];
-//                 }
-
-//             }
-//         }
-
-//         // Normally we would have to add exclusions for:
-//         // x_dom_exclusions
-//         // x_ic78_exclusions
-//         // x_deepcore_exclusions
-//         // But for this data metho, there are no exclusions,
-//         // so we can skip this
-//     }
-
-// }
 
 #endif
