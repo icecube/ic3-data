@@ -12,28 +12,12 @@
 #include "dataclasses/I3Vector.h"
 
 // include necessary boost headers
-#include <boost/version.hpp> // for version info
 #include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 
 #include "utils.cpp"
 
-/*
-Depending on the boost version, we need to use numpy differently.
-Prior to Boost 1.63 (BOOST_VERSION == 106300) numpy was not directly
-included in boost/python
-
-See answers and discussion provided here:
-https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boostpython
-*/
-#if BOOST_VERSION < 106500
-    #include <numpy/ndarrayobject.h>
-    #include "numpy/npy_3kcompat.h"
-    typedef typename boost::python::numeric::array pyndarray;
-#else
-    #include <boost/python/numpy.hpp>
-    typedef typename boost::python::numpy::ndarray pyndarray;
-    namespace bn = boost::python::numpy;
-#endif
+namespace bn = boost::python::numpy;
 
 // --------------------------------------------
 // Define Detector Constants for Hex-Conversion
@@ -67,7 +51,7 @@ inline void update_time_offset(
     // create references to the data fields that need to be modified
     I3Double& global_time_offset = boost::python::extract<I3Double&>(
         container.attr("global_time_offset"));
-    pyndarray global_time_offset_batch = boost::python::extract<pyndarray>(
+    bn::ndarray global_time_offset_batch = boost::python::extract<bn::ndarray>(
         container.attr("global_time_offset_batch"));
 
     // update fields
@@ -115,21 +99,13 @@ inline void update_str_dom_data_fields(
                             ) {
 
     // create references to the data fields that need to be modified
-    pyndarray x_dom = boost::python::extract<pyndarray>(
+    bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
         container.attr("x_dom"));
 
     // check data type of numpy arrays
-    #if BOOST_VERSION < 106500
-        // if (NPY_DOUBLE != x_dom.get_dtype()){
-        //     log_fatal("Numpy array x_dom in container is not np.float64!");
-        // }
-    #else
-        if (bn::dtype::get_builtin<double>() != x_dom.get_dtype()){
-            log_fatal("Numpy array x_dom in container is not np.float64!");
-        }
-    #endif
-
-
+    if (bn::dtype::get_builtin<double>() != x_dom.get_dtype()){
+        log_fatal("Numpy array x_dom in container is not np.float64!");
+    }
 
     // get a pointer to the input data
     double* x_dom_ptr = reinterpret_cast<double*>(x_dom.get_data());
@@ -174,27 +150,18 @@ inline void update_hex_data_fields(
                             ) {
 
     // create references to the data fields that need to be modified
-    pyndarray x_deepcore = boost::python::extract<pyndarray>(
+    bn::ndarray x_deepcore = boost::python::extract<bn::ndarray>(
         container.attr("x_deepcore"));
-    pyndarray x_ic78 = boost::python::extract<pyndarray>(
+    bn::ndarray x_ic78 = boost::python::extract<bn::ndarray>(
         container.attr("x_ic78"));
 
     // check data type of numpy arrays
-    #if BOOST_VERSION < 106500
-        // if (NPY_DOUBLE != x_ic78.get_dtype()){
-        //     log_fatal("Numpy array x_ic78 in container is not np.float64!");
-        // }
-        // if (NPY_DOUBLE != x_deepcore.get_dtype()){
-        //     log_fatal("Numpy array x_deepcore in container is not np.float64!");
-        // }
-    #else
-        if (bn::dtype::get_builtin<double>() != x_ic78.get_dtype()){
-            log_fatal("Numpy array x_ic78 in container is not np.float64!");
-        }
-        if (bn::dtype::get_builtin<double>() != x_deepcore.get_dtype()){
-            log_fatal("Numpy array x_deepcore in container is not np.float64!");
-        }
-    #endif
+    if (bn::dtype::get_builtin<double>() != x_ic78.get_dtype()){
+        log_fatal("Numpy array x_ic78 in container is not np.float64!");
+    }
+    if (bn::dtype::get_builtin<double>() != x_deepcore.get_dtype()){
+        log_fatal("Numpy array x_deepcore in container is not np.float64!");
+    }
 
     // get a pointer to the input data
     double* x_deepcore_ptr = reinterpret_cast<double*>(x_deepcore.get_data());
