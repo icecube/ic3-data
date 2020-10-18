@@ -193,11 +193,11 @@ inline void update_hex_data_fields(
 
             // DeepCore
             for (int i=0; i < bin_indices_list.size(); i++){
-                // x_deepcore[batch_index][string_num - 78][om_num]
-                //     [bin_indices_list[i]] = bin_values_list[i];
+                x_deepcore[batch_index][string_num - 78][om_num]
+                    [bin_indices_list[i]] = bin_values_list[i];
 
-                int offset = dom_offset + bin_indices_list[i];
-                x_deepcore_ptr[offset] = bin_values_list[i];
+                // int offset = dom_offset + bin_indices_list[i];
+                // x_deepcore_ptr[offset] = bin_values_list[i];
             }
 
         }else{
@@ -215,11 +215,11 @@ inline void update_hex_data_fields(
                 + 60*n_bins*hex_b + n_bins*om_num;
 
             for (int i=0; i < bin_indices_list.size(); i++){
-                // x_ic78[batch_index][hex_a][hex_b][om_num]
-                //     [bin_indices_list[i]] = bin_values_list[i];
+                x_ic78[batch_index][hex_a][hex_b][om_num]
+                    [bin_indices_list[i]] = bin_values_list[i];
 
-                int offset = dom_offset + bin_indices_list[i];
-                x_ic78_ptr[offset] = bin_values_list[i];
+                // int offset = dom_offset + bin_indices_list[i];
+                // x_ic78_ptr[offset] = bin_values_list[i];
             }
         }
     }
