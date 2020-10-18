@@ -97,12 +97,13 @@ inline void update_str_dom_data_fields(
                               const std::vector<I3VectorDouble>& bin_values
                             ) {
 
-    // create references to the data fields that need to be modified
-    bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
-        container.attr("x_dom"));
+    // // create references to the data fields that need to be modified
+    // bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
+    //     container.attr("x_dom"));
 
     // get a pointer to the input data
-    double* x_dom_ptr = reinterpret_cast<double*>(x_dom.get_data());
+    double* x_dom_ptr = reinterpret_cast<double*>(
+        container.attr("x_dom").get_data());
 
     // compute helper variables for offset calculation
     const int n_strings = 86;
