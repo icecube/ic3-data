@@ -110,7 +110,9 @@ inline void update_str_dom_data_fields(
     // }
 
     // get a pointer to the input data
-    // double* x_dom_ptr = reinterpret_cast<double*>(x_dom.getflat());
+    // this is the fastest way to access and modify the data
+    double* x_dom_ptr = reinterpret_cast<double*>(
+        &x_dom[boost::python::make_tuple(0, 0, 0, 0)]);
 
     // compute helper variables for offset calculation
     const int n_strings = 86;
@@ -134,12 +136,12 @@ inline void update_str_dom_data_fields(
 
         // add data values
         for (int i=0; i < bin_indices_list.size(); i++){
-            x_dom[boost::python::make_tuple(
-                batch_index, string_num, om_num, bin_indices_list[i])]
-                = bin_values_list[i];
+            // x_dom[boost::python::make_tuple(
+            //     batch_index, string_num, om_num, bin_indices_list[i])]
+            //     = bin_values_list[i];
 
-            // int offset = dom_offset + bin_indices_list[i];
-            // x_dom_ptr[offset] = bin_values_list[i];
+            int offset = dom_offset + bin_indices_list[i];
+            x_dom_ptr[offset] = bin_values_list[i];
         }
     }
 }
@@ -167,8 +169,11 @@ inline void update_hex_data_fields(
     // }
 
     // get a pointer to the input data
-    // double* x_deepcore_ptr = reinterpret_cast<double*>(x_deepcore.getflat());
-    // double* x_ic78_ptr = reinterpret_cast<double*>(x_ic78.getflat());
+    // this is the fastest way to access and modify the data
+    double* x_deepcore_ptr = reinterpret_cast<double*>(
+        &x_deepcore[boost::python::make_tuple(0, 0, 0, 0, 0)]);
+    double* x_ic78_ptr = reinterpret_cast<double*>(
+        &x_ic78[boost::python::make_tuple(0, 0, 0, 0, 0)]);
 
     // compute helper variables for offset calculation
     const int n_bins =  boost::python::extract<int>(
@@ -196,12 +201,12 @@ inline void update_hex_data_fields(
 
             // DeepCore
             for (int i=0; i < bin_indices_list.size(); i++){
-                x_deepcore[boost::python::make_tuple(
-                    batch_index, string_num - 78, om_num,
-                    bin_indices_list[i])] = bin_values_list[i];
+                // x_deepcore[boost::python::make_tuple(
+                //     batch_index, string_num - 78, om_num,
+                //     bin_indices_list[i])] = bin_values_list[i];
 
-                // int offset = dom_offset + bin_indices_list[i];
-                // x_deepcore_ptr[offset] = bin_values_list[i];
+                int offset = dom_offset + bin_indices_list[i];
+                x_deepcore_ptr[offset] = bin_values_list[i];
             }
 
         }else{
@@ -219,12 +224,12 @@ inline void update_hex_data_fields(
                 + 60*n_bins*hex_b + n_bins*om_num;
 
             for (int i=0; i < bin_indices_list.size(); i++){
-                x_ic78[boost::python::make_tuple(
-                    batch_index, hex_a, hex_b, om_num,
-                    bin_indices_list[i])] = bin_values_list[i];
+                // x_ic78[boost::python::make_tuple(
+                //     batch_index, hex_a, hex_b, om_num,
+                //     bin_indices_list[i])] = bin_values_list[i];
 
-                // int offset = dom_offset + bin_indices_list[i];
-                // x_ic78_ptr[offset] = bin_values_list[i];
+                int offset = dom_offset + bin_indices_list[i];
+                x_ic78_ptr[offset] = bin_values_list[i];
             }
         }
     }
