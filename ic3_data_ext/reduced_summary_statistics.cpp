@@ -101,6 +101,9 @@ inline void update_str_dom_data_fields(
     bn::ndarray x_dom = boost::python::extract<bn::ndarray>(
         container.attr("x_dom"));
 
+    const int num_bins =  boost::python::extract<int>(
+        container.attr("config")["num_bins"]);
+
     for (int counter = 0; counter < om_keys.size(); counter++){
 
         // get data
@@ -394,23 +397,23 @@ inline void fill_reduced_summary_statistics_data(
     // Now update Container data fields
     // --------------------------------
 
-    // // update global offset time
-    // update_time_offset<T>(container, global_offset_time, batch_index);
+    // update global offset time
+    update_time_offset<T>(container, global_offset_time, batch_index);
 
-    // // udate I3Map data fields if results are to be written to the frame
-    // if (write_to_frame){
-    //     update_i3_map_data_fields(
-    //         container, om_keys, bin_indices, bin_exclusions, bin_values);
-    // }
+    // udate I3Map data fields if results are to be written to the frame
+    if (write_to_frame){
+        update_i3_map_data_fields(
+            container, om_keys, bin_indices, bin_exclusions, bin_values);
+    }
 
-    // // Update container data
-    // if (is_str_dom_format){
-    //     update_str_dom_data_fields(
-    //         container, batch_index, om_keys, bin_indices, bin_values);
-    // }else{
-    //     update_hex_data_fields(
-    //         container, batch_index, om_keys, bin_indices, bin_values);
-    // }
+    // Update container data
+    if (is_str_dom_format){
+        update_str_dom_data_fields(
+            container, batch_index, om_keys, bin_indices, bin_values);
+    }else{
+        update_hex_data_fields(
+            container, batch_index, om_keys, bin_indices, bin_values);
+    }
 
     // Normally we would have to add exclusions for:
     // x_dom_exclusions
