@@ -5,6 +5,7 @@
 
 #include "icetray/I3Frame.h"
 #include "icetray/OMKey.h"
+#include "icetray/I3Logging.h"
 #include "dataclasses/physics/I3RecoPulse.h"
 #include "dataclasses/I3Map.h"
 #include "dataclasses/I3Double.h"
