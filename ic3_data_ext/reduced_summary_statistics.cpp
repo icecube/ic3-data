@@ -29,7 +29,6 @@ https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boos
     #include <numpy/ndarrayobject.h>
     #include "numpy/npy_3kcompat.h"
     typedef typename boost::python::numeric::array pyndarray;
-    namespace bn = boost::python::numeric;
 #else
     #include <boost/python/numpy.hpp>
     typedef typename boost::python::numpy::ndarray pyndarray;
@@ -120,9 +119,17 @@ inline void update_str_dom_data_fields(
         container.attr("x_dom"));
 
     // check data type of numpy arrays
-    if (bn::dtype::get_builtin<double>() != x_dom.get_dtype()){
-        log_fatal("Numpy array x_dom in container is not np.float64!");
-    }
+    #if BOOST_VERSION < 106500
+        if (NPY_DOUBLE != x_dom.get_dtype()){
+            log_fatal("Numpy array x_dom in container is not np.float64!");
+        }
+    #else
+        if (bn::dtype::get_builtin<double>() != x_dom.get_dtype()){
+            log_fatal("Numpy array x_dom in container is not np.float64!");
+        }
+    #endif
+
+
 
     // get a pointer to the input data
     double* x_dom_ptr = reinterpret_cast<double*>(x_dom.get_data());
@@ -173,12 +180,21 @@ inline void update_hex_data_fields(
         container.attr("x_ic78"));
 
     // check data type of numpy arrays
-    if (bn::dtype::get_builtin<double>() != x_ic78.get_dtype()){
-        log_fatal("Numpy array x_ic78 in container is not np.float64!");
-    }
-    if (bn::dtype::get_builtin<double>() != x_deepcore.get_dtype()){
-        log_fatal("Numpy array x_deepcore in container is not np.float64!");
-    }
+    #if BOOST_VERSION < 106500
+        if (NPY_DOUBLE != x_ic78.get_dtype()){
+            log_fatal("Numpy array x_ic78 in container is not np.float64!");
+        }
+        if (NPY_DOUBLE != x_deepcore.get_dtype()){
+            log_fatal("Numpy array x_deepcore in container is not np.float64!");
+        }
+    #else
+        if (bn::dtype::get_builtin<double>() != x_ic78.get_dtype()){
+            log_fatal("Numpy array x_ic78 in container is not np.float64!");
+        }
+        if (bn::dtype::get_builtin<double>() != x_deepcore.get_dtype()){
+            log_fatal("Numpy array x_deepcore in container is not np.float64!");
+        }
+    #endif
 
     // get a pointer to the input data
     double* x_deepcore_ptr = reinterpret_cast<double*>(x_deepcore.get_data());
