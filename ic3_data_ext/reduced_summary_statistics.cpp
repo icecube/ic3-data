@@ -14,7 +14,6 @@
 // include necessary boost headers
 #include <boost/version.hpp> // for version info
 #include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
 
 #include "utils.cpp"
 
@@ -28,9 +27,10 @@ https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boos
 */
 #if BOOST_VERSION < 106500
     #include <numpy/ndarrayobject.h>
-    #include "numpy/npy_3kcompat.h"
+    #include <boost/numpy.hpp>
     typedef typename boost::python::numeric::array pyndarray;
     namespace arrayFunc = boost::python::numeric;
+    namespace bn = boost::numpy;
 #else
     #include <boost/python/numpy.hpp>
     typedef typename boost::python::numpy::ndarray pyndarray;
