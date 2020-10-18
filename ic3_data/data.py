@@ -92,15 +92,20 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # or if it is one that computes the values for one DOM at a time
         if self._config['data_format'] in [
                 'total_dom_charge',
-                'reduced_summary_statistics_data',
                 'cascade_classification_data',
                 'mc_tree_input_data',
                 ]:
-            self._calculate_per_dom = False
+            self._calculation_method = 'calculate_for_detector'
             class_string = 'ic3_data.data_formats_detector.{}'.format(
                                     self._config['data_format'])
+        elif self._config['data_format'] in [
+                'reduced_summary_statistics_data',
+                ]:
+            self._calculation_method = 'fill_container'
+            class_string = 'ic3_data.data_formats_fill.{}'.format(
+                                    self._config['data_format'])
         else:
-            self._calculate_per_dom = True
+            self._calculation_method = 'calculate_per_dom'
             class_string = 'ic3_data.data_formats.{}'.format(
                                     self._config['data_format'])
         self._data_format_func = misc.load_class(class_string)
@@ -154,7 +159,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # ------------------------------------------------
         # Calculate DNN input data seperately for each DOM
         # ------------------------------------------------
-        if self._calculate_per_dom:
+        if self._calculation_method == 'calculate_per_dom':
             # restructure pulses
             # charges, times, dom_times_dict, dom_charges_dict = \
             #     self.restructure_pulses(pulses)
@@ -218,7 +223,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # ---------------------------------------------------
         # Calculate DNN input data for whole detector at once
         # ---------------------------------------------------
-        else:
+        elif self._calculation_method == 'calculate_for_detector':
 
             global_time_offset, data_dict = self._data_format_func(
                                     frame=frame,
@@ -240,6 +245,26 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
             self._container.global_time_offset.value = global_time_offset
             self._container.global_time_offset_batch[self._batch_index] = \
                 global_time_offset
+
+        # --------------------------------
+        # Directly fill DNN Data Container
+        # --------------------------------
+        elif self._calculation_method == 'fill_container':
+
+            # fill the data container
+            self._data_format_func(
+                container=self._container,
+                batch_index=self._batch_index,
+                write_to_frame=self._write_to_frame,
+                frame=frame,
+                pulses=pulses,
+                config=self._config,
+                dom_exclusions=self._dom_exclusions,
+                partial_exclusion=self._partial_exclusion,
+            )
+
+        else:
+            raise ValueError('Unknown method:', self._calculation_method)
         # ---------------------------------------------------
 
         # measure time
