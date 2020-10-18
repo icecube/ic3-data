@@ -27,14 +27,12 @@ https://stackoverflow.com/questions/10701514/how-to-return-numpy-array-from-boos
 */
 #if BOOST_VERSION < 106500
     #include <numpy/ndarrayobject.h>
-    #include <boost/numpy.hpp>
+    #include "numpy/npy_3kcompat.h"
     typedef typename boost::python::numeric::array pyndarray;
-    namespace arrayFunc = boost::python::numeric;
-    namespace bn = boost::numpy;
+    namespace bn = boost::python::numeric;
 #else
     #include <boost/python/numpy.hpp>
     typedef typename boost::python::numpy::ndarray pyndarray;
-    namespace arrayFunc = boost::python::numpy;
     namespace bn = boost::python::numpy;
 #endif
 
