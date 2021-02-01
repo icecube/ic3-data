@@ -877,6 +877,80 @@ I3RecoPulseSeriesMapPtr get_valid_pulse_map(
 }
 
 
+I3RecoPulseSeriesMapPtr merge_pulses(
+                            boost::python::object& frame_obj,
+                            const boost::python::object& pulse_key_obj,
+                            const boost::python::object& time_threshold_obj){
+    /*
+    This method creates a new pulse series by combining pulses that are nearby
+    in time. The threshold time under which pulses are combined to one is
+    defined by `time_threshold`.
+    */
+
+    // extract c++ data types from python objects
+    I3Frame& frame = boost::python::extract<I3Frame&>(frame_obj);
+    const std::string pulse_key =
+        boost::python::extract<std::string>(pulse_key_obj);
+    const double time_threshold =
+        boost::python::extract<double>(time_threshold_obj);
+
+    // get pulses
+    const I3RecoPulseSeriesMap& pulses =
+        frame.Get<I3RecoPulseSeriesMap>(pulse_key);
+
+    // create a new and empty pulse series mask
+    I3RecoPulseSeriesMap pulses_merged = I3RecoPulseSeriesMap();
+
+    // now iterate through DOMs
+    for (I3RecoPulseSeriesMap::const_iterator dom_pulse_ptr = pulses.begin();
+                dom_pulse_ptr != pulses.end(); dom_pulse_ptr++){
+
+        // create new pulse series for this DOM
+        I3RecoPulseSeries merged_pulse_series = I3RecoPulseSeries();
+
+        // create iterator for pulse series
+        I3RecoPulseSeries::const_iterator pulse_ptr =
+            dom_pulse_ptr->second.begin();
+
+        I3RecoPulse last_pulse = I3RecoPulse(*pulse_ptr);
+        pulse_ptr += 1;
+
+
+        // iterate through pulses at DOM
+        while (pulse_ptr != dom_pulse_ptr->second.end()) {
+
+            // check if this pulse is within the specified threshold
+            if (pulse_ptr->GetTime() - last_pulse.GetTime() <= time_threshold){
+                // merge pulse
+                last_pulse.SetCharge(
+                    pulse_ptr->GetCharge() + last_pulse.GetCharge());
+            } else{
+                // found new pulse: so append previous pulse
+                merged_pulse_series.push_back(last_pulse);
+
+                // set new last pulse
+                last_pulse = I3RecoPulse(*pulse_ptr);
+            }
+
+            pulse_ptr += 1;
+        }
+
+        // add last pulse
+        merged_pulse_series.push_back(last_pulse);
+
+        // add to pulse series map
+        pulses_merged[dom_pulse_ptr->first] = merged_pulse_series;
+
+    }
+
+    // create shared pulse series map
+    I3RecoPulseSeriesMapPtr shared_pulse_series_map =
+        boost::make_shared<I3RecoPulseSeriesMap>(pulses_merged);
+
+    return shared_pulse_series_map;
+}
+
+
 BOOST_PYTHON_MODULE(ext_boost)
 {
     #if BOOST_VERSION < 106500
@@ -896,6 +970,9 @@ BOOST_PYTHON_MODULE(ext_boost)
 
     boost::python::def("get_valid_pulse_map",
                        &get_valid_pulse_map);
+
+    boost::python::def("merge_pulses",
+                       &merge_pulses);
 
     boost::python::def("combine_exclusions",
                        &combine_exclusions);
