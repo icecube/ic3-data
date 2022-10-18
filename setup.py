@@ -69,10 +69,11 @@ def get_icecube_includes():
     dir_parts = os.environ['I3_SRC'].split('/metaprojects/')
     # remove the specified software system
     prefix = os.path.dirname(dir_parts[0])
-    include_pattern = os.path.join(
-        prefix, 'metaprojects', dir_parts[1], '*/public')
-    cvmfs_include_dirs = glob.glob(include_pattern)
-    include_dirs.extend(cvmfs_include_dirs)
+    cvmfs_src_dir = os.path.join(prefix, 'metaprojects', dir_parts[1])
+    include_pattern = os.path.join(cvmfs_src_dir, '*/public')
+    include_dirs.extend(glob.glob(include_pattern))
+    include_dirs.append(os.path.join(
+        cvmfs_src_dir, 'cmake/tool-patches/common/'))
 
     return include_dirs
 
