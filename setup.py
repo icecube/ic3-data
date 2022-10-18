@@ -64,6 +64,16 @@ def get_icecube_includes():
     if 'SROOT' in os.environ:
         include_dirs.append(os.path.join(os.environ['SROOT'], 'include/'))
 
+    # get include paths for GitHub icetray builds in cvmfs
+    # get directory parts before and after software system
+    dir_parts = os.environ['I3_SRC'].split('/metaprojects/')
+    # remove the specified software system
+    prefix = os.path.dirname(dir_parts[0])
+    include_pattern = os.path.join(
+        prefix, 'metaprojects', dir_parts[1], '*/public')
+    cvmfs_include_dirs = glob.glob(include_pattern)
+    include_dirs.extend(cvmfs_include_dirs)
+
     return include_dirs
 
 
