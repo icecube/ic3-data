@@ -11,7 +11,6 @@ from ic3_data import ext_boost
 from ic3_data.utils.time import get_wf_quantile
 from ic3_data.utils.time import get_time_of_first_light
 from ic3_data.utils import detector
-from ic3_data.utils.autoencoder import autoencoder
 
 
 class DNNContainerHandler(icetray.I3ConditionalModule):
@@ -85,6 +84,8 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                 raise ValueError('Timing method must be wf_quantile!')
 
         if self._config['data_format'] == 'autoencoder':
+            from ic3_data.utils.autoencoder import autoencoder
+
             self._config['autoencoder'] = autoencoder.get_autoencoder(
                                         self._config['autoencoder_settings'])
 

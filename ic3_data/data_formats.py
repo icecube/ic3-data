@@ -1,7 +1,6 @@
 from __future__ import print_function, division
 import numpy as np
 
-from ic3_data.utils.autoencoder import autoencoder as aencoder
 from ic3_data.misc import weighted_quantile, weighted_std
 from ic3_data.ext_pybind11 import get_summary_data
 from ic3_data.ext_boost import get_time_bin_exclusions
@@ -347,6 +346,8 @@ def autoencoder(dom_charges, rel_dom_times, global_time_offset,
     list
         The list of bin indices which define bins that will be excluded.
     """
+    from ic3_data.utils.autoencoder import autoencoder as aencoder
+
     # create bin exclusions list
     bin_exclusions_list = []
 
