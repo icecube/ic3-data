@@ -143,7 +143,7 @@ class DNNDataContainer(object):
 
         config_file = os.path.join(model_path, config_name)
         with open(config_file, 'r') as stream:
-            cfg_data = yaml.safe_load(stream)
+            cfg_data = yaml.YAML(typ="safe", pure=True).load(stream)
 
         self.config['num_bins'] = cfg_data['num_bins']
         self.config['relative_time_method'] = cfg_data['relative_time_method']
