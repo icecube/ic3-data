@@ -107,11 +107,11 @@ def get_boost_libraries():
         # python 3 libraries
         suffix = '{}{}'.format(sys.version_info.major, sys.version_info.minor)
         libraries = [
-            'boost_python'+suffix, 'boost_numpy'+suffix, 'phys-services',
+            'boost_python'+suffix, 'boost_numpy'+suffix, 'phys-services', 'dataclasses', 'icetray',
         ]
     else:
         # python 2 libraries
-        libraries = ['boost_python', 'phys-services']
+        libraries = ['boost_python', 'phys-services',  'dataclasses', 'icetray']
     return libraries
 
 
@@ -155,9 +155,11 @@ def has_flag(compiler, flagname):
 
 def cpp_flag(compiler):
     """Return the -std=c++[11/14] compiler flag.
-    The c++14 is prefered over c++11 (when it is available).
+    The c++17 is prefered over c++14 or c++11 (when it is available).
     """
-    if has_flag(compiler, '-std=c++14'):
+    if has_flag(compiler, '-std=c++17'):
+        return '-std=c++17'
+    elif has_flag(compiler, '-std=c++14'):
         return '-std=c++14'
     elif has_flag(compiler, '-std=c++11'):
         return '-std=c++11'
