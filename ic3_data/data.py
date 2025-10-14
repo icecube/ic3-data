@@ -111,6 +111,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
                                     self._config['data_format'])
         self._data_format_func = misc.load_class(class_string)
         self._is_str_dom_format = self._container.config['is_str_dom_format']
+        self._container.ProcessedCurrentBatch=False
 
     def Geometry(self, frame):
         """Get a dictionary with DOM positions
@@ -135,10 +136,12 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         """
         # start timer
         start_time = timeit.default_timer()
-
         # initialize data fields of data container if new batch is started
-        if self._batch_index == self._container.batch_size:
+        #This happens when either the container is filled to batch size (at which point processing should happen)
+        #Or the ProcessedCurrentBatch flag is set to true by the processing
+        if ((self._batch_index == self._container.batch_size) or self._container.ProcessedCurrentBatch):
             self._container.initialize()
+            self._container.ProcessedCurrentBatch=False
             self._batch_index = 0
 
         # get masked pulses

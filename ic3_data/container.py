@@ -17,7 +17,7 @@ class DNNDataContainer(object):
         self.batch_size = batch_size
         self._is_configured = False
         self._is_ready = False
-
+        self.ProcessedCurrentBatch=False
     def configure(self, num_bins, relative_time_method, data_format, pulse_key,
                   time_bins=None,
                   time_quantiles=None,
@@ -323,7 +323,7 @@ class DNNDataContainer(object):
         self.bin_values = dataclasses.I3MapKeyVectorDouble()
         self.global_time_offset = dataclasses.I3Double()
         self.runtime = dataclasses.I3Double()
-
+        self.ProcessedCurrentBatch=False
     def is_ready(self):
         """Check if data container is ready.
 
