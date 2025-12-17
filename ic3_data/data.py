@@ -121,7 +121,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         frame : I3Frame
             Current i3 frame.
         """
-        geo_map = frame['I3Geometry'].omgeo
+        geo_map = frame['I3Geometry'].omgeo.items()
         self._dom_pos_dict = {i[0]: i[1].position for i in geo_map
                               if i[1].omtype.name == 'IceCube'}
         self.PushFrame(frame)
@@ -139,7 +139,7 @@ class DNNContainerHandler(icetray.I3ConditionalModule):
         # initialize data fields of data container if new batch is started
         #This happens when either the container is filled to batch size (at which point processing should happen)
         #Or the ProcessedCurrentBatch flag is set to true by the processing
-        if ((self._batch_index == self._container.batch_size) or self._container.ProcessedCurrentBatch):
+        if (self._container.ProcessedCurrentBatch):
             self._container.initialize()
             self._container.ProcessedCurrentBatch=False
             self._batch_index = 0
